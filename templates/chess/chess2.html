@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title></title>
+<meta charset="utf-8"/>
+<style>
+            .chess-board { border-spacing: 0; border-collapse: collapse; }
+            .chess-board th { padding: .5em; }
+            .chess-board th + th { border-bottom: 1px solid #000; }
+            .chess-board th:first-child,
+            .chess-board td:last-child { border-right: 1px solid #000; }
+            .chess-board tr:last-child td { border-bottom: 1px solid; }
+            .chess-board th:empty { border: none; }
+            .chess-board td { width: 1.5em; height: 1.5em; text-align: center; font-size: 32px; line-height: 0;}
+            .chess-board .light { background: #eee; }
+            .chess-board .dark { background: #aaa; }
+        </style>
+<script>
+            let gameId = document.getElementById('game_id').innerText;
+            let color = document.getElementById('player_color').innerText;
+            let ws = new WebSocket("ws://127.0.0.1:8000/websocket/chessboard/" + "1231231231" + '/' + "fd94a2ab-2e0b-4f2d-a983-5bd90b70025a" + '/');
+
+            ws.onmessage = function(event) {
+                var data = event.data.split(' ');
+                var from = data[0];
+                var to = data[1];
+                document.getElementById(to).textContent = document.getElementById(from).textContent;
+                document.getElementById(from).textContent = '';
+            };
+            function getCookie(name) {
+                var matches = document.cookie.match(new RegExp(
+                 "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+                 ))
+                    return matches ? decodeURIComponent(matches[1]) : undefined
+            }
+            function sendMessage(event) {
+                let input = document.getElementById("messageText")
+                let chessboard = getCookie("chessboard")
+                ws.send(chessboard + ' ' + input.value)
+                input.value = ''
+                event.preventDefault()
+            }
+
+            function activateFigure(event){
+              var activeCell = event.currentTarget;
+              var activeFigure = activeCell.innerText;
+              ws.send(event.currentTarget['id']);
+
+            }
+
+        </script>
+</head>
+<body>
+<p id="game_id" style="visibility: hidden">{{ game_id }}</p>
+<table class="chess-board">
+<tbody>
+<tr>
+<th></th>
+<th>a</th>
+<th>b</th>
+<th>c</th>
+<th>d</th>
+<th>e</th>
+<th>f</th>
+<th>g</th>
+<th>h</th>
+</tr>
+<tr>
+<th>8</th>
+<td class="light" id="a8" onclick="activateFigure(event)">♜</td>
+<td class="dark" id="b8" onclick="activateFigure(event)">♞</td>
+<td class="light" id="c8" onclick="activateFigure(event)">♝</td>
+<td class="dark" id="d8" onclick="activateFigure(event)">♛</td>
+<td class="light" id="e8" onclick="activateFigure(event)">♚</td>
+<td class="dark" id="f8" onclick="activateFigure(event)">♝</td>
+<td class="light" id="g8" onclick="activateFigure(event)">♞</td>
+<td class="dark" id="h8" onclick="activateFigure(event)">♜</td>
+</tr>
+<tr>
+<th>7</th>
+<td class="dark" id="a7" onclick="activateFigure(event)">♟</td>
+<td class="light" id="b7" onclick="activateFigure(event)">♟</td>
+<td class="dark" id="c7" onclick="activateFigure(event)">♟</td>
+<td class="light" id="d7" onclick="activateFigure(event)">♟</td>
+<td class="dark" id="e7" onclick="activateFigure(event)">♟</td>
+<td class="light" id="f7" onclick="activateFigure(event)">♟</td>
+<td class="dark" id="g7" onclick="activateFigure(event)">♟</td>
+<td class="light" id="h7" onclick="activateFigure(event)">♟</td>
+</tr>
+<tr>
+<th>6</th>
+<td class="light" id="a6" onclick="activateFigure(event)"></td>
+<td class="dark" id="b6" onclick="activateFigure(event)"></td>
+<td class="light" id="c6" onclick="activateFigure(event)"></td>
+<td class="dark" id="d6" onclick="activateFigure(event)"></td>
+<td class="light" id="e6" onclick="activateFigure(event)"></td>
+<td class="dark" id="f6" onclick="activateFigure(event)"></td>
+<td class="light" id="g6" onclick="activateFigure(event)"></td>
+<td class="dark" id="h6" onclick="activateFigure(event)"></td>
+</tr>
+<tr>
+<th>5</th>
+<td class="dark" id="a5" onclick="activateFigure(event)"></td>
+<td class="light" id="b5" onclick="activateFigure(event)"></td>
+<td class="dark" id="c5" onclick="activateFigure(event)"></td>
+<td class="light" id="d5" onclick="activateFigure(event)"></td>
+<td class="dark" id="e5" onclick="activateFigure(event)"></td>
+<td class="light" id="f5" onclick="activateFigure(event)"></td>
+<td class="dark" id="g5" onclick="activateFigure(event)"></td>
+<td class="light" id="h5" onclick="activateFigure(event)"></td>
+</tr>
+<tr>
+<th>4</th>
+<td class="light" id="a4" onclick="activateFigure(event)"></td>
+<td class="dark" id="b4" onclick="activateFigure(event)"></td>
+<td class="light" id="c4" onclick="activateFigure(event)"></td>
+<td class="dark" id="d4" onclick="activateFigure(event)"></td>
+<td class="light" id="e4" onclick="activateFigure(event)"></td>
+<td class="dark" id="f4" onclick="activateFigure(event)"></td>
+<td class="light" id="g4" onclick="activateFigure(event)"></td>
+<td class="dark" id="h4" onclick="activateFigure(event)"></td>
+</tr>
+<tr>
+<th>3</th>
+<td class="dark" id="a3" onclick="activateFigure(event)"></td>
+<td class="light" id="b3" onclick="activateFigure(event)"></td>
+<td class="dark" id="c3" onclick="activateFigure(event)"></td>
+<td class="light" id="d3" onclick="activateFigure(event)"></td>
+<td class="dark" id="e3" onclick="activateFigure(event)"></td>
+<td class="light" id="f3" onclick="activateFigure(event)"></td>
+<td class="dark" id="g3" onclick="activateFigure(event)"></td>
+<td class="light" id="h3" onclick="activateFigure(event)"></td>
+</tr>
+<tr>
+<th>2</th>
+<td class="light" id="a2" onclick="activateFigure(event)">♙</td>
+<td class="dark" id="b2" onclick="activateFigure(event)">♙</td>
+<td class="light" id="c2" onclick="activateFigure(event)">♙</td>
+<td class="dark" id="d2" onclick="activateFigure(event)">♙</td>
+<td class="light" id="e2" onclick="activateFigure(event)">♙</td>
+<td class="dark" id="f2" onclick="activateFigure(event)">♙</td>
+<td class="light" id="g2" onclick="activateFigure(event)">♙</td>
+<td class="dark" id="h2" onclick="activateFigure(event)">♙</td>
+</tr>
+<tr>
+<th>1</th>
+<td class="dark" id="a1" onclick="activateFigure(event)">♖</td>
+<td class="light" id="b1" onclick="activateFigure(event)">♘</td>
+<td class="dark" id="c1" onclick="activateFigure(event)">♗</td>
+<td class="light" id="d1" onclick="activateFigure(event)">♕</td>
+<td class="dark" id="e1" onclick="activateFigure(event)">♔</td>
+<td class="light" id="f1" onclick="activateFigure(event)">♗</td>
+<td class="dark" id="g1" onclick="activateFigure(event)">♘</td>
+<td class="light" id="h1" onclick="activateFigure(event)">♖</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>
