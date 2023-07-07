@@ -3,26 +3,26 @@ from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    DB_URI: str = f"postgresql://postgres:password@localhost/chess"
+    DB_URI: str
 
     SECRET_KEY: str
-    EXPIRE_MINUTES = 60 * 24
-    ALGORITHM = "HS256"
+    EXPIRE_MINUTES: int
+    ALGORITHM: str
 
     SUPERUSER_NAME: str
     SUPERUSER_PASSWORD: str
     SUPERUSER_EMAIL: str
 
-    REDIS_HOST: str = "localhost"
-    REDIS_PORT: int = 6379
+    REDIS_HOST: str
+    REDIS_PORT: int
 
     class Config:
         if os.getenv("TEST"):
-            env_file = '../.test.env'
+            env_file = '.test.env'
         elif os.getenv("PROD"):
-            env_file = "../.prod.env"
+            env_file = ".prod.env"
         else:
-            env_file = '../.env'
+            env_file = '.env'
 
 
 def get_app_settings():
