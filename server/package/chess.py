@@ -1,8 +1,19 @@
 import itertools
 from abc import ABC, abstractmethod
-from .htmlRedactor import generate_chessboard
 from enum import StrEnum, auto
 from itertools import cycle
+
+
+CHESSBOARD = (
+    ("", "", "", "", "", "", "", ""),
+    ("", "", "", "", "", "", "", ""),
+    ("", "", "", "", "", "", "", ""),
+    ("", "", "", "", "", "", "", ""),
+    ("", "", "", "", "", "", "", ""),
+    ("", "", "", "", "", "", "", ""),
+    ("", "", "", "", "", "", "", ""),
+    ("", "", "", "", "", "", "", ""),
+)
 
 
 class Color(StrEnum):
@@ -18,12 +29,12 @@ class Axis(StrEnum):
 class Chess:
     ABC: str = 'abcdefgh'
 
-    def __init__(self, chessboard_=generate_chessboard()):
+    def __init__(self, chessboard=CHESSBOARD):
         self.cut_1 = []
         self.cut_2 = []
         self.access_queue = cycle((Color.white, Color.black))
         self.access_color = next(self.access_queue)
-        self.chessboard = chessboard_
+        self.chessboard = [list(row) for row in chessboard]
         self.last_activated: Figure | None = None
         self.init_figures()
 
