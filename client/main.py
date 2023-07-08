@@ -1,3 +1,6 @@
+"""
+File for running application.
+"""
 from windows.main import MainWindow
 from PyQt6.QtWidgets import QApplication
 import sys
