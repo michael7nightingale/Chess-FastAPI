@@ -20,7 +20,7 @@ class LoginWindow(QWidget):
         self.ui = Ui_LoginWindow()
         self.ui.setupUi(self)
         self.hide_labels()
-        self.ui.pushButton.clicked.connect(self.onclick)
+        self.ui.submit_button.clicked.connect(self.onclick)
 
     def hide_labels(self):
         self.ui.password_label.hide()
@@ -35,7 +35,6 @@ class LoginWindow(QWidget):
         were_alerts = False
         username = self.ui.username_input.text()
         if not validate_username(username):
-            print(1231231)
             were_alerts = True
             self.alert(self.ui.username_label, "Username is too short")
 
