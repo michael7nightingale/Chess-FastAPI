@@ -8,7 +8,7 @@ class User(Base, TableMixin):
 
     id = Column(String(100), primary_key=True)
     username = Column(String(40), unique=True)
-    first_name = Column(String(40))
+    first_name = Column(String(40), nullable=True)
     last_name = Column(String(40), nullable=True)
     email = Column(String(50), unique=True)
     password = Column(String(200))
