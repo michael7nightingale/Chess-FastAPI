@@ -10,5 +10,5 @@ class Game(Base, TableMixin):
     black_user = Column(String(100), ForeignKey("users.id"))
     white_user = Column(String(100), ForeignKey("users.id"))
     winner = Column(String(100), ForeignKey("users.id"))
-    time_start = Column(DateTime, server_default=func.now)
+    time_start = Column(DateTime, server_default=func.now())
     time_finish = Column(DateTime, nullable=True)

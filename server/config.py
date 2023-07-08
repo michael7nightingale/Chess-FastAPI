@@ -23,6 +23,7 @@ class Settings(BaseSettings):
             env_file = ".prod.env"
         else:
             env_file = '.env'
+        # env_file = ".test.env"
 
 
 def get_app_settings():
