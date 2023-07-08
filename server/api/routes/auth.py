@@ -18,7 +18,7 @@ async def get_all_users(user_repo: UserRepository = Depends(get_repository(UserR
     return [u.as_dict() for u in users]
 
 
-@auth_router.post("/register")
+@auth_router.post("/register", status_code=201)
 async def register_user(user_repo: UserRepository = Depends(get_repository(UserRepository)),
                         user_schema: UserRegister = Body()) -> UserShow:
     """Register user endpoint. All schema data is needed."""
