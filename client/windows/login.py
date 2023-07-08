@@ -5,13 +5,11 @@ from ui.login import Ui_LoginWindow
 
 
 def validate_username(username: str):
-    if len(username) < 5:
-        return False
+    return len(username) >= 5
 
 
 def validate_password(password):
-    if len(password) < 5:
-        return False
+    return len(password) >= 5
 
 
 class LoginWindow(QWidget):
@@ -34,27 +32,29 @@ class LoginWindow(QWidget):
 
     def onclick(self):
         self.hide_labels()
+        were_alerts = False
         username = self.ui.username_input.text()
         if not validate_username(username):
+            print(1231231)
+            were_alerts = True
             self.alert(self.ui.username_label, "Username is too short")
 
         password = self.ui.password_input.text()
         if not validate_password(password):
+            were_alerts = True
             self.alert(self.ui.password_label, "Password is too short")
 
-        # try to send request
-        data = {
-            "username": username,
-            "password": password
-        }
-        try:
-            response = requests.post(url=self.config['base_url'] + "auth/token", json=data)
-            assert response.status_code == 200
-            self.config['token'] = response.json()['access_token']
-        except Exception:
-            self.main_window.show_exit_dialog("Cannot connect to the server.")
+        if not were_alerts:
+            # try to send request
+            data = {
+                "username": username,
+                "password": password
+            }
+            try:
+                response = requests.post(url=self.config['base_url'] + "auth/token", json=data)
+                assert response.status_code == 200
+                self.config['token'] = response.json()['access_token']
+            except Exception:
+                self.main_window.show_exit_dialog("Cannot connect to the server.")
 
-        self.close()
-
-
-
+            self.close()

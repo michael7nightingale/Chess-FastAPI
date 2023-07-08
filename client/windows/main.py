@@ -62,12 +62,14 @@ class MainWindow(QMainWindow):
         accept_button.clicked.connect(lambda: self.close())
         v_layout.addWidget(accept_button)
         dialog.show()
+        # self.close()
 
     def show_login_window(self):
         if not self.login_window.isVisible():
             self.login_window.show()
 
     def closeEvent(self, event):
+        print(123)
         for window in QApplication.topLevelWidgets():
             window.destroy()
 
