@@ -30,36 +30,44 @@ class MainWindow(QMainWindow):
         self.check_connection()
         self.check_token()
 
-    def check_connection(self):
+    def check_connection(self) -> None:
         """Check connection to the internet."""
         try:
             response = requests.get("https://example.com")
             assert response.status_code == 200
-        except Exception:
+        except requests.ConnectionError:
             show_exit_dialog(self, "Bad internet connection")
+        except Exception as e:
+            show_exit_dialog(self, f"Unexpected error: {e}")
 
-    def check_token(self):
+    def check_token(self) -> None:
         """Checks if there is token saved in the config."""
         if "token" not in self.config:
             self.show_login_window()
         else:
-            self.lobby_window.setup()
+            self.show_lobby_window()
             self.show()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
         """Self close event."""
         for window in QApplication.topLevelWidgets():
             window.destroy()
 
-    def show_login_window(self):
+    def show_login_window(self) -> None:
         """Show login window."""
         if not self.login_window.isVisible():
             self.login_window.show()
 
-    def show_registration_window(self):
+    def show_registration_window(self) -> None:
         """Show registration window."""
         if not self.registration_window.isVisible():
             self.registration_window.show()
 
-    def on_start_game(self, event):
+    def show_lobby_window(self) -> None:
+        self.lobby_window.setup()
+
+    def show_chessboard_window(self) -> None:
         self.chessboard_window.setup()
+
+    def on_start_game(self, event) -> None:
+        self.show_chessboard_window()
