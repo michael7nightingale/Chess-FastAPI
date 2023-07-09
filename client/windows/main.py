@@ -1,9 +1,8 @@
 from PyQt6.QtWidgets import QMainWindow, QApplication
 import requests
 
+from . import LobbyWindow, RegistrationWindow, ChessboardWindow, LoginWindow
 from ui.main import Ui_MainWindow
-from .login import LoginWindow
-from .registration import RegistrationWindow
 from config import Config
 from qt_tools import show_exit_dialog
 
@@ -24,6 +23,8 @@ class MainWindow(QMainWindow):
         # setup subwindows
         self.login_window = LoginWindow(self, self.config)
         self.registration_window = RegistrationWindow(self, self.config)
+        self.lobby_window = LobbyWindow(self, self.config)
+        self.chessboard_window = ChessboardWindow(self, self.config)
 
         # on-open-application events to check system state
         self.check_connection()
@@ -42,6 +43,7 @@ class MainWindow(QMainWindow):
         if "token" not in self.config:
             self.show_login_window()
         else:
+            self.lobby_window.setup()
             self.show()
 
     def closeEvent(self, event):
@@ -58,3 +60,6 @@ class MainWindow(QMainWindow):
         """Show registration window."""
         if not self.registration_window.isVisible():
             self.registration_window.show()
+
+    def on_start_game(self, event):
+        self.chessboard_window.setup()
