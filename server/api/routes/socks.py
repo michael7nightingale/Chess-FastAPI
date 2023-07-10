@@ -1,11 +1,13 @@
-from fastapi import WebSocket, APIRouter, Path, Depends
+from fastapi import WebSocket, APIRouter, Path, Dependfrom random import choice
+
 from package.chess import Chess
 from api.dependencies import get_repository
 from infrastructure.db.repositories import UserRepository
+from infrastructure.redis_ import redis_session
 
 
 router = APIRouter(
-    prefix="/websocket"
+    prefix="/ws"
 )
 
 
@@ -31,6 +33,26 @@ class ChessSocket:
                 pass
             else:
                 await self.sock.send_text(f"{to_move} {cell_id}")
+
+
+@router.websocket("/wait-player")
+async def wait_for_the_plater(
+    ws: WebSocket,
+
+):
+    await ws.accept()
+    while True:
+        redis_session.set(12, 23)
+        username = await ws.receive_text()
+        print(username)
+        usernames = redis_session.keys("*")
+        if len(usernames):
+            print(usernames)
+            enemy_username = choice(usernames).decode()
+            print(enemy_username)
+            await ws.send_text(username[::-1])
+        else:
+            redis_session.set(username, 1)
 
 
 @router.websocket('/chessboard/{game_id}/{user_id}')
