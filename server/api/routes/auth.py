@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Body, Depends
+from fastapi import APIRouter, Body, Depends, Request
 
 from api.dependencies.auth import create_token, get_superuser
 from api.dependencies.database import get_repository
@@ -27,6 +27,13 @@ async def register_user(user_repo: UserRepository = Depends(get_repository(UserR
 
 
 @auth_router.post("/token")
-async def get_token(token: str = Depends(create_token)):
+async def get_token(request: Request, user_data: dict = Body()):
     """Get auth token by login data (username, password) in request Body"""
-    return {"access_token": token}
+    return {"access_token": request.app.state.login_manager.create_token(user_data)}
+
+
+@auth_router.get("/me")
+async def get_me(request: Request):
+    """Get auth token by login data (username, password) in request Body"""
+    return request.user.data
+
