@@ -33,4 +33,4 @@ def get_app_settings():
 def get_app_settings_by_keys(*args):
     settings = get_app_settings()
     for key in args:
-        yield settings.__getattribute__(name=key)
+        yield settings.__getattribute__(key)
