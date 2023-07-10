@@ -5,6 +5,8 @@ from infrastructure.db.utils import create_superuser
 from api.routes import __routes__
 from config import get_app_settings
 
+from fastapi_auth import LoginManager
+
 
 class Server:
     __slots__ = ("_app", "_settings", "_engine", "_pool")
@@ -13,6 +15,7 @@ class Server:
         self._settings = get_app_settings()
         self._app: FastAPI = app
         self._configurate_db()
+        self._configurate_auth()
         self._configurate_routes(*__routes__)
 
     @property
@@ -22,6 +25,14 @@ class Server:
     def _configurate_routes(self, *routers: APIRouter) -> None:
         for r in routers:
             self._app.include_router(r)
+
+    def _configurate_auth(self):
+        self.app.state.login_manager = LoginManager(
+            app=self.app,
+            secret_key=self._settings.SECRET_KEY,
+            expire_minutes=self._settings.EXPIRE_MINUTES,
+            algorithm=self._settings.ALGORITHM
+        )
 
     def _on_startup(self):
         self._app.state.pool = self._pool
