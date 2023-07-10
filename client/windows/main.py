@@ -1,6 +1,9 @@
 from PyQt6.QtWidgets import QMainWindow, QApplication
-import requests
 
+from websockets.sync.client import connect
+import asyncio
+
+from requestor import Requestor
 from . import LobbyWindow, RegistrationWindow, ChessboardWindow, LoginWindow
 from ui.main import Ui_MainWindow
 from config import Config
@@ -16,7 +19,6 @@ class MainWindow(QMainWindow):
         # setup main window ui
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-
         # configuration
         self.config: Config = Config.load_config()
 
@@ -27,18 +29,16 @@ class MainWindow(QMainWindow):
         self.chessboard_window = ChessboardWindow(self, self.config)
 
         # on-open-application events to check system state
-        self.check_connection()
+        self.requestor = Requestor(check_token_func=self.check_token(), main_window=self)
+        self.requestor.check_connection()
+        self.wait_for_players()
         self.check_token()
 
-    def check_connection(self) -> None:
-        """Check connection to the internet."""
-        try:
-            response = requests.get("https://example.com")
-            assert response.status_code == 200
-        except requests.ConnectionError:
-            show_exit_dialog(self, "Bad internet connection")
-        except Exception as e:
-            show_exit_dialog(self, f"Unexpected error: {e}")
+    def wait_for_players(self):
+        with connect("ws://localhost:8000/ws/wait-player") as ws:
+            ws.send(self.config['user']['username'])
+            data = ws.recv(10)
+            print(data)
 
     def check_token(self) -> None:
         """Checks if there is token saved in the config."""
@@ -67,7 +67,13 @@ class MainWindow(QMainWindow):
         self.lobby_window.setup()
 
     def show_chessboard_window(self) -> None:
+        # self.setMinimumSize(self.width(), self.height())
+        # self.setMaximumSize(self.width(), self.height())
         self.chessboard_window.setup()
 
-    def on_start_game(self, event) -> None:
+    def on_start_self_game(self, event) -> None:
+        self.show_chessboard_window()
+
+    def on_join_game(self, event) -> None:
+        self.wait_for_players()
         self.show_chessboard_window()

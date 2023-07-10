@@ -361,7 +361,7 @@ class Ui_ChessboardWindow(object):
         self.gridLayout.addWidget(self.f2, 6, 7, 1, 1)
         self.g2 = QtWidgets.QLabel(parent=self.frame_2)
         self.g2.mousePressEvent = partial(self.click_figure, cell=self.g2)
-        self.g2.setStyleSheet("background-color: rgb(255, 255, 255);  font: 12 30pt 'DejaVu Sans Light'; font: 12 22pt 'DejaVu Sans Light';")
+        self.g2.setStyleSheet("background-color: rgb(255, 255, 255);  font: 12 30pt 'DejaVu Sans Light'; font: 12 30pt 'DejaVu Sans Light';")
         self.g2.setText("♟")
         self.g2.setObjectName("g2")
         self.gridLayout.addWidget(self.g2, 6, 8, 1, 1)

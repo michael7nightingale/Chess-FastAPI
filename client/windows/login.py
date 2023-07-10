@@ -1,10 +1,9 @@
 from PyQt6.QtWidgets import QWidget
-import requests
 from typing import Mapping
 
 from ui.login import Ui_LoginWindow
 from validators import validate_password, validate_username
-from qt_tools import alert, show_exit_dialog
+from qt_tools import alert
 
 
 class LoginWindow(QWidget):
@@ -15,7 +14,7 @@ class LoginWindow(QWidget):
         self.ui = Ui_LoginWindow()
         self.ui.setupUi(self)
         self.ui.submit_button.clicked.connect(self.onsubmit)
-        self.ui.registration_button.clicked.connect(self.onregistration)
+        self.ui.registration_button.clicked.connect(self.on_registration)
         self.hide_labels()
 
     def hide_labels(self):
@@ -43,21 +42,22 @@ class LoginWindow(QWidget):
                 "username": username,
                 "password": password
             }
-            try:
-                response = requests.post(
-                    url=self.config['base_url'] + "auth/token",
-                    json=data
-                )
-                assert response.status_code == 200
-                self.config['token'] = response.json()['access_token']
-            except requests.ConnectionError:
-                show_exit_dialog(self, "Cannot connect to the server.")
-            except AssertionError:
-                show_exit_dialog(self, "User has not been found.")
-            else:
-                self.close()
-                self.main_window.check_token()
+            response = self.main_window.requestor.post_unauthorized(
+                url=self.config['base_url'] + "auth/token",
+                json=data,
+                window=self
+            )
+            self.config['token'] = response.json()["access_token"]
 
-    def onregistration(self, event):
+            user_data_response = self.main_window.requestor.get_authorized(
+                url=self.config['base_url'] + "auth/me",
+            )
+            self.config['user'] = user_data_response.json()
+
+
+            self.close()
+            self.main_window.show_lobby_window()
+
+    def on_registration(self, event):
         self.close()
         self.main_window.show_registration_window()

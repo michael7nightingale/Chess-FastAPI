@@ -1,10 +1,9 @@
-import requests
 from PyQt6.QtWidgets import QWidget
 from typing import Mapping
 
 from ui.registration import Ui_RegistrationWindow
 from validators import validate_password, validate_username, validate_email
-from qt_tools import alert, show_exit_dialog
+from qt_tools import alert
 
 
 class RegistrationWindow(QWidget):
@@ -16,7 +15,7 @@ class RegistrationWindow(QWidget):
         self.ui.setupUi(self)
 
         self.ui.submit_button.clicked.connect(self.onsubmit)
-        self.ui.login_button.clicked.connect(self.onlogin)
+        self.ui.login_button.clicked.connect(self.on_login)
         self.hide_labels()
 
     def hide_labels(self):
@@ -42,27 +41,19 @@ class RegistrationWindow(QWidget):
             were_alerts = True
 
         if not were_alerts:
-            try:
-                data = {
-                    "username": username,
-                    "password": password,
-                    "email": email
-                }
-                response = requests.post(
-                    self.config["base_url"] + "auth/register",
-                    json=data
-                )
-                assert response.status_code == 201
-            except requests.ConnectionError:
-                show_exit_dialog(self, "Cannot connect to the server.")
-            except AssertionError:
-                print(response.json())
-                show_exit_dialog(self, "Data is invalid.")
-            else:
-                self.close()
-                self.main_window.show_login_window()
+            data = {
+                "username": username,
+                "password": password,
+                "email": email
+            }
+            response = self.main_window.requestor.post_unautorized(
+                url=self.config["base_url"] + "auth/token",
+                json=data,
+                status_code=201
+            )
+            self.close()
+            self.main_window.show_login_window()
 
-
-    def onlogin(self, event):
+    def on_login(self, event):
         self.close()
         self.main_window.show_login_window()

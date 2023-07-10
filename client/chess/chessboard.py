@@ -96,6 +96,8 @@ class Chess:
                 if figure == self.last_activated:
                     self.deactivate_all()
                 else:
+                    if self.last_activated.color == figure.color:
+                        return
                     to_move = self.last_activated.move(figure)
                     if to_move:
                         from_id = self.idx_to_id(*self.last_activated.coords)

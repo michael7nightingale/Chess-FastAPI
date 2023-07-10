@@ -19,9 +19,14 @@ class Ui_LobbyWindow(object):
         self.frame_3.setObjectName("frame_3")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.frame_3)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.start_game_button = QtWidgets.QPushButton(parent=self.frame_3)
-        self.start_game_button.setObjectName("start_game_button")
-        self.verticalLayout_2.addWidget(self.start_game_button)
+        self.start_self_game_button = QtWidgets.QPushButton(parent=self.frame_3)
+        self.start_self_game_button.setObjectName("start_self_game_button")
+        self.verticalLayout_2.addWidget(self.start_self_game_button)
+
+        self.join_game_button = QtWidgets.QPushButton(parent=self.frame_3)
+        self.join_game_button.setObjectName("join_game_button")
+        self.verticalLayout_2.addWidget(self.join_game_button)
+
         self.horizontalLayout.addWidget(self.frame_3)
         self.frame_2 = QtWidgets.QFrame(parent=self.frame)
         self.frame_2.setMaximumSize(QtCore.QSize(300, 16777215))
@@ -48,5 +53,6 @@ class Ui_LobbyWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "Chess Game"))
-        self.start_game_button.setText(_translate("MainWindow", "Start game"))
+        self.start_self_game_button.setText(_translate("MainWindow", "Start self game"))
+        self.join_game_button.setText(_translate("MainWindow", "Join game"))
         self.label.setText(_translate("MainWindow", "Players"))
