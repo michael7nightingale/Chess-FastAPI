@@ -77,6 +77,7 @@ async def wait_for_the_plater(
                 redis_session.delete(enemy_username)
                 # redis_session.sync()
                 await ws.send_json(game_data)
+                break
         else:
             redis_session.set(username, 1)
 
