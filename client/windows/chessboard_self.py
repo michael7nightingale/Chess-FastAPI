@@ -1,19 +1,15 @@
 from PyQt6.QtWidgets import QWidget, QLabel
-from ui.chessboard import Ui_ChessboardWindow
+from ui.chessboard_self import Ui_ChessboardSelfWindow
 
 from chess import Chess, CHESSBOARD, NUMBERS, LETTERS
 
 
-class ChessboardWindow(QWidget):
-    def __init__(self, parent, config, data):
+class ChessboardSelfWindow(QWidget):
+    def __init__(self, parent, config):
         self.main_window = parent
         self.config = config
         super().__init__(parent)
-        self.data: dict = data
-        self.ui = Ui_ChessboardWindow()
-
-    def setupData(self):
-        ...
+        self.ui = Ui_ChessboardSelfWindow()
 
     def setChessboard(self) -> None:
         """Place all figures on the desk."""

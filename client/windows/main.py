@@ -1,10 +1,12 @@
+import json
+
 from PyQt6.QtWidgets import QMainWindow, QApplication
 
 from websockets.sync.client import connect
 import asyncio
 
 from requestor import Requestor
-from . import LobbyWindow, RegistrationWindow, ChessboardWindow, LoginWindow
+from . import LobbyWindow, RegistrationWindow, ChessboardSelfWindow, LoginWindow, ChessboardWindow
 from ui.main import Ui_MainWindow
 from config import Config
 from qt_tools import show_exit_dialog
@@ -26,19 +28,18 @@ class MainWindow(QMainWindow):
         self.login_window = LoginWindow(self, self.config)
         self.registration_window = RegistrationWindow(self, self.config)
         self.lobby_window = LobbyWindow(self, self.config)
-        self.chessboard_window = ChessboardWindow(self, self.config)
+        self.chessboard_self_window = ChessboardSelfWindow(self, self.config)
 
         # on-open-application events to check system state
         self.requestor = Requestor(check_token_func=self.check_token(), main_window=self)
         self.requestor.check_connection()
-        self.wait_for_players()
         self.check_token()
 
-    def wait_for_players(self):
-        with connect("ws://localhost:8000/ws/wait-player") as ws:
+    def wait_for_players(self) -> dict:
+        with connect("ws://localhost:8001/ws/wait-player") as ws:
             ws.send(self.config['user']['username'])
-            data = ws.recv(10)
-            print(data)
+            data = ws.recv()
+            return json.loads(data)
 
     def check_token(self) -> None:
         """Checks if there is token saved in the config."""
@@ -66,14 +67,19 @@ class MainWindow(QMainWindow):
     def show_lobby_window(self) -> None:
         self.lobby_window.setup()
 
-    def show_chessboard_window(self) -> None:
-        # self.setMinimumSize(self.width(), self.height())
-        # self.setMaximumSize(self.width(), self.height())
+    def show_chessboard_window(self, data: dict):
+        print(123132, data)
+        self.chessboard_window = ChessboardWindow(parent=self, config=self.config, data=data)
         self.chessboard_window.setup()
 
+    def show_chessboard_self_window(self) -> None:
+        # self.setMinimumSize(self.width(), self.height())
+        # self.setMaximumSize(self.width(), self.height())
+        self.chessboard_self_window.setup()
+
     def on_start_self_game(self, event) -> None:
-        self.show_chessboard_window()
+        self.show_chessboard_self_window()
 
     def on_join_game(self, event) -> None:
-        self.wait_for_players()
-        self.show_chessboard_window()
+        data = self.wait_for_players()
+        self.show_chessboard_window(data=data)
