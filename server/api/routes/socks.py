@@ -57,12 +57,9 @@ async def wait_for_the_plater(
                 colors = list(player_colors)
                 shuffle(colors)
                 you_color, enemy_color = colors
-
                 # users
-                # print([u.username for u in user_repo.all()])
                 you = user_repo.filter(username=username)
                 enemy = user_repo.filter(username=username)
-                # print(12, you, enemy, user_repo)
                 black_user, white_user = (you, enemy) if you_color == "black" else (enemy, you)
                 new_game = game_repo.create(
                     black_user=black_user.id,
@@ -78,11 +75,11 @@ async def wait_for_the_plater(
                     "enemy_color": enemy_color
                 }
                 redis_session.delete(enemy_username)
-                print(redis_session.keys("*"))
-                redis_session.sync()
+                # redis_session.sync()
                 await ws.send_json(game_data)
         else:
             redis_session.set(username, 1)
+
         await asyncio.sleep(0)
 
 

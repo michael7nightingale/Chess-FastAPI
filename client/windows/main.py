@@ -1,8 +1,7 @@
-import json
-
 from PyQt6.QtWidgets import QMainWindow, QApplication
-
+from PyQt6.QtCore import QThread, QObject, pyqtSignal
 from websockets.sync.client import connect
+import json
 import asyncio
 
 from requestor import Requestor
@@ -10,6 +9,22 @@ from . import LobbyWindow, RegistrationWindow, ChessboardSelfWindow, LoginWindow
 from ui.main import Ui_MainWindow
 from config import Config
 from qt_tools import show_exit_dialog
+
+
+class WsWaitThread(QThread):
+    finished = pyqtSignal()
+
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window
+
+    def run(self):
+        with connect("ws://localhost:8001/ws/wait-player") as ws:
+            ws.send(self.main_window.config['user']['username'])
+            data = ws.recv()
+            print(data)
+            self.finished.emit()
+            return json.loads(data)
 
 
 class MainWindow(QMainWindow):
@@ -36,10 +51,11 @@ class MainWindow(QMainWindow):
         self.check_token()
 
     def wait_for_players(self) -> dict:
-        with connect("ws://localhost:8001/ws/wait-player") as ws:
-            ws.send(self.config['user']['username'])
-            data = ws.recv()
-            return json.loads(data)
+        # thread = WsWaitWorker(self)
+        # thread.start()
+        self.thread = WsWaitThread(self)
+        self.thread.finished.connect(self.show_chessboard_self_window)
+        self.thread.start()
 
     def check_token(self) -> None:
         """Checks if there is token saved in the config."""
@@ -68,7 +84,6 @@ class MainWindow(QMainWindow):
         self.lobby_window.setup()
 
     def show_chessboard_window(self, data: dict):
-        print(123132, data)
         self.chessboard_window = ChessboardWindow(parent=self, config=self.config, data=data)
         self.chessboard_window.setup()
 
@@ -82,4 +97,4 @@ class MainWindow(QMainWindow):
 
     def on_join_game(self, event) -> None:
         data = self.wait_for_players()
-        self.show_chessboard_window(data=data)
+        # self.show_chessboard_window(data=data)
