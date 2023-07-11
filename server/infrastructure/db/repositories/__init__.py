@@ -1,1 +1,2 @@
-from infrastructure.db.repositories.user import UserRepository
+from .user import UserRepository
+from .game import GameRepository
