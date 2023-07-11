@@ -1,14 +1,18 @@
-from fastapi import WebSocket, APIRouter, Path, Dependfrom random import choice
+import asyncio
+
+from fastapi import WebSocket, APIRouter, Path, Depends
+from random import choice, shuffle
 
 from package.chess import Chess
-from api.dependencies import get_repository
-from infrastructure.db.repositories import UserRepository
+from api.dependencies import get_repository, get_socket_repository
+from infrastructure.db.repositories import UserRepository, GameRepository
 from infrastructure.redis_ import redis_session
 
 
 router = APIRouter(
     prefix="/ws"
 )
+player_colors = {"white", "color"}
 
 
 class ChessSocket:
@@ -40,19 +44,46 @@ async def wait_for_the_plater(
     ws: WebSocket,
 
 ):
+    game_repo: GameRepository = get_socket_repository(GameRepository)()
+    user_repo: UserRepository = get_socket_repository(UserRepository)()
     await ws.accept()
+    username = await ws.receive_text()
     while True:
-        redis_session.set(12, 23)
-        username = await ws.receive_text()
-        print(username)
         usernames = redis_session.keys("*")
         if len(usernames):
-            print(usernames)
             enemy_username = choice(usernames).decode()
-            print(enemy_username)
-            await ws.send_text(username[::-1])
+            if enemy_username != username:
+                # colors
+                colors = list(player_colors)
+                shuffle(colors)
+                you_color, enemy_color = colors
+
+                # users
+                # print([u.username for u in user_repo.all()])
+                you = user_repo.filter(username=username)
+                enemy = user_repo.filter(username=username)
+                # print(12, you, enemy, user_repo)
+                black_user, white_user = (you, enemy) if you_color == "black" else (enemy, you)
+                new_game = game_repo.create(
+                    black_user=black_user.id,
+                    white_user=white_user.id,
+                )
+                # game data to send
+                game_data = {
+                    "status": 201,
+                    "you": username,
+                    "enemy": enemy_username,
+                    "game_id": new_game.id,
+                    "you_color": you_color,
+                    "enemy_color": enemy_color
+                }
+                redis_session.delete(enemy_username)
+                print(redis_session.keys("*"))
+                redis_session.sync()
+                await ws.send_json(game_data)
         else:
             redis_session.set(username, 1)
+        await asyncio.sleep(0)
 
 
 @router.websocket('/chessboard/{game_id}/{user_id}')
