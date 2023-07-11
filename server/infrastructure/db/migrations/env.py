@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from infrastructure.db import Base
-from infrastructure.db.models import User
+from infrastructure.db.models import User, Game
 from config import get_app_settings
 
 # this is the Alembic Config object, which provides
