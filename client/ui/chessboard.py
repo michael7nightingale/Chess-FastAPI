@@ -3,7 +3,7 @@ from functools import partial
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 
-class Ui_ChessWindow(object):
+class Ui_ChessboardWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(825, 682)
@@ -380,12 +380,12 @@ class Ui_ChessWindow(object):
         self.g2.setText("")
         self.g2.setObjectName("g2")
         self.gridLayout.addWidget(self.g2, 6, 8, 1, 1)
-        self.h1_2 = QtWidgets.QLabel(parent=self.frame_2)
-        self.h1_2.mousePressEvent = partial(self.click_figure, cell=self.h1_2)
-        self.h1_2.setStyleSheet("background-color: rgb(125, 125, 125);")
-        self.h1_2.setText("")
-        self.h1_2.setObjectName("h1_2")
-        self.gridLayout.addWidget(self.h1_2, 7, 10, 1, 1)
+        self.h1 = QtWidgets.QLabel(parent=self.frame_2)
+        self.h1.mousePressEvent = partial(self.click_figure, cell=self.h1)
+        self.h1.setStyleSheet("background-color: rgb(125, 125, 125);")
+        self.h1.setText("")
+        self.h1.setObjectName("h1")
+        self.gridLayout.addWidget(self.h1, 7, 10, 1, 1)
         self.b1 = QtWidgets.QLabel(parent=self.frame_2)
         self.b1.mousePressEvent = partial(self.click_figure, cell=self.b1)
         self.b1.setStyleSheet("background-color: rgb(125, 125, 125);")
@@ -409,12 +409,12 @@ class Ui_ChessWindow(object):
         self.a_label.setStyleSheet("")
         self.a_label.setObjectName("a_label")
         self.gridLayout.addWidget(self.a_label, 8, 1, 1, 1)
-        self.h1 = QtWidgets.QLabel(parent=self.frame_2)
-        self.h1.mousePressEvent = partial(self.click_figure, cell=self.h1)
-        self.h1.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.h1.setText("")
-        self.h1.setObjectName("h1")
-        self.gridLayout.addWidget(self.h1, 7, 8, 1, 1)
+        self.g1 = QtWidgets.QLabel(parent=self.frame_2)
+        self.g1.mousePressEvent = partial(self.click_figure, cell=self.g1)
+        self.g1.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.g1.setText("")
+        self.g1.setObjectName("g1")
+        self.gridLayout.addWidget(self.g1, 7, 8, 1, 1)
         self.c_label = QtWidgets.QLabel(parent=self.frame_2)
         self.c_label.mousePressEvent = partial(self.click_figure, cell=self.c_label)
         self.c_label.setStyleSheet("")
