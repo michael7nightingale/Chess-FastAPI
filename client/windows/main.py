@@ -12,7 +12,7 @@ from qt_tools import show_exit_dialog
 
 
 class WsWaitThread(QThread):
-    finished = pyqtSignal()
+    finished = pyqtSignal(dict)
 
     def __init__(self, main_window):
         super().__init__()
@@ -23,8 +23,7 @@ class WsWaitThread(QThread):
             ws.send(self.main_window.config['user']['username'])
             data = ws.recv()
             print(data)
-            self.finished.emit()
-            return json.loads(data)
+            self.finished.emit(json.loads(data))
 
 
 class MainWindow(QMainWindow):
@@ -54,7 +53,7 @@ class MainWindow(QMainWindow):
         # thread = WsWaitWorker(self)
         # thread.start()
         self.thread = WsWaitThread(self)
-        self.thread.finished.connect(self.show_chessboard_self_window)
+        self.thread.finished.connect(self.show_chessboard_window)
         self.thread.start()
 
     def check_token(self) -> None:

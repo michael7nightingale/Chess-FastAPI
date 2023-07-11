@@ -1,4 +1,5 @@
 import asyncio
+import json
 
 from fastapi import WebSocket, APIRouter, Path, Depends
 from random import choice, shuffle
@@ -12,7 +13,7 @@ from infrastructure.redis_ import redis_session
 router = APIRouter(
     prefix="/ws"
 )
-player_colors = {"white", "color"}
+player_colors = {"white", "black"}
 
 
 class ChessSocket:
@@ -48,11 +49,18 @@ async def wait_for_the_plater(
     user_repo: UserRepository = get_socket_repository(UserRepository)()
     await ws.accept()
     username = await ws.receive_text()
+    wasEmpty = False
     while True:
-        usernames = redis_session.keys("*")
-        if len(usernames):
-            enemy_username = choice(usernames).decode()
-            if enemy_username != username:
+        if wasEmpty:
+            game_data = redis_session.get(username).decode()
+            if game_data != "0":
+                await ws.send_json(json.loads(game_data))
+                redis_session.delete(username)
+                break
+        else:
+            usernames = redis_session.keys("*")
+            if len(usernames):
+                enemy_username = choice(usernames).decode()
                 # colors
                 colors = list(player_colors)
                 shuffle(colors)
@@ -74,15 +82,15 @@ async def wait_for_the_plater(
                     "you_color": you_color,
                     "enemy_color": enemy_color
                 }
-                redis_session.delete(enemy_username)
-                # redis_session.sync()
+                redis_session.set(enemy_username, json.dumps(game_data))
                 await ws.send_json(game_data)
                 break
-        else:
-            redis_session.set(username, 1)
+            else:
+                wasEmpty = True
+                redis_session.set(username, 0)
 
-        await asyncio.sleep(0)
-
+        await asyncio.sleep(0.0001)
+        
 
 @router.websocket('/chessboard/{game_id}/{user_id}')
 async def sock_chess(
