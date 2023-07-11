@@ -13,7 +13,6 @@ from qt_tools import show_exit_dialog
 
 class WsWaitThread(QThread):
     finished = pyqtSignal()
-    game_data = pyqtSignal(dict)
 
     def __init__(self, main_window):
         super().__init__()
@@ -25,7 +24,7 @@ class WsWaitThread(QThread):
             data = ws.recv()
             print(data)
             self.finished.emit()
-            self.game_data.emit(json.loads(data))
+            return json.loads(data)
 
 
 class MainWindow(QMainWindow):
@@ -55,7 +54,7 @@ class MainWindow(QMainWindow):
         # thread = WsWaitWorker(self)
         # thread.start()
         self.thread = WsWaitThread(self)
-        self.thread.game_data.connect(self.show_chessboard_window)
+        self.thread.finished.connect(self.show_chessboard_self_window)
         self.thread.start()
 
     def check_token(self) -> None:
@@ -97,4 +96,5 @@ class MainWindow(QMainWindow):
         self.show_chessboard_self_window()
 
     def on_join_game(self, event) -> None:
-        self.wait_for_players()
+        data = self.wait_for_players()
+        # self.show_chessboard_window(data=data)
