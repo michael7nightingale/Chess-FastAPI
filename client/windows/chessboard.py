@@ -12,9 +12,6 @@ class ChessboardWindow(QWidget):
         self.data: dict = data
         self.ui = Ui_ChessboardWindow()
 
-    def setupData(self):
-        ...
-
     def setChessboard(self) -> None:
         """Place all figures on the desk."""
         self.chess = Chess()
@@ -28,6 +25,9 @@ class ChessboardWindow(QWidget):
     def setup(self) -> None:
         """Set up GUI for lobby window inside the main window."""
         self.ui.setupUi(self.main_window)
+        self.ui.move_color_label.setText("Белые")
+        self.ui.enemy_label.setText(self.data['enemy'])
+        self.ui.you_color_label.setText(self.data['you_color'])
         self.setChessboard()
 
     def click_figure(self, event, cell: QLabel) -> None:

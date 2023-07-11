@@ -95,5 +95,5 @@ class MainWindow(QMainWindow):
         self.show_chessboard_self_window()
 
     def on_join_game(self, event) -> None:
-        data = self.wait_for_players()
+        self.wait_for_players()
         # self.show_chessboard_window(data=data)

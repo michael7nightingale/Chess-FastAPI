@@ -54,7 +54,12 @@ async def wait_for_the_plater(
         if wasEmpty:
             game_data = redis_session.get(username).decode()
             if game_data != "0":
-                await ws.send_json(json.loads(game_data))
+                game_data_dict: dict = json.loads(game_data)
+                middle_game_data = {"you": game_data_dict['enemy'], "you_color": game_data_dict['enemy_color']}
+                game_data_dict['enemy'] = game_data_dict['you']
+                game_data_dict['enemy_color'] = game_data_dict['you_color']
+                game_data_dict.update(middle_game_data)
+                await ws.send_json(game_data_dict)
                 redis_session.delete(username)
                 break
         else:
@@ -92,18 +97,12 @@ async def wait_for_the_plater(
         await asyncio.sleep(0.0001)
         
 
-@router.websocket('/chessboard/{game_id}/{user_id}')
+@router.websocket('/chessboard/{game_id}/')
 async def sock_chess(
-        sock: WebSocket,
-        game_id: str = Path(),
-        user_id: str | int = Path(),
-        user_repo: UserRepository = Depends(get_repository(UserRepository))
+        ws: WebSocket,
+        game_id: str,
 ):
-    chess_socket = ChessSocket(
-        sock=sock,
-        game_id=game_id,
-        user=user_repo.get(user_id)
-    )
-    await chess_socket.accept()
-    await chess_socket.listen_forever()
-
+    await ws.accept()
+    while True:
+        move = await ws.receive_json()
+        await ws.send_json(move)
