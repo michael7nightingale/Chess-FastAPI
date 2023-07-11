@@ -6,7 +6,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_ChessboardWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(825, 682)
+        MainWindow.resize(1000, 682)
         self.main_window = MainWindow
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -492,7 +492,7 @@ class Ui_ChessboardWindow(object):
         self.gridLayout.addWidget(self._8_label, 0, 0, 1, 1)
         self.horizontalLayout.addWidget(self.frame_2)
         self.frame_4 = QtWidgets.QFrame(parent=self.frame)
-        self.frame_4.setMaximumSize(QtCore.QSize(250, 16777215))
+        self.frame_4.setMaximumSize(QtCore.QSize(200, 16777215))
         self.frame_4.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
         self.frame_4.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
         self.frame_4.setObjectName("frame_4")

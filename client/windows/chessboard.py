@@ -33,13 +33,15 @@ class ChessboardWindow(QWidget):
     def click_figure(self, event, cell: QLabel) -> None:
         """Function on clicking the chessboard cell."""
         cell_id = cell.objectName()
-        to_move: str | None = self.chess.move(cell_id)
-        if to_move is not None:
-            (from_id, to_id), (from_data, to_data) = to_move
-            from_cell = self.ui.centralwidget.findChild(QLabel, from_id)
-            if all((from_data, to_data)):
-                cell.setText(from_data)
-                from_cell.setText("")
-            else:
-                cell.setText(from_data)
-                from_cell.setText(to_data)
+        print(cell_id, cell)
+        if self.data['you_color'] == self.chess.access_color:
+            to_move: str | None = self.chess.move(cell_id)
+            if to_move is not None:
+                (from_id, to_id), (from_data, to_data) = to_move
+                from_cell = self.ui.centralwidget.findChild(QLabel, from_id)
+                if all((from_data, to_data)):
+                    cell.setText(from_data)
+                    from_cell.setText("")
+                else:
+                    cell.setText(from_data)
+                    from_cell.setText(to_data)
