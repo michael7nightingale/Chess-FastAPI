@@ -29,7 +29,7 @@ async def register_user(user_repo: UserRepository = Depends(get_repository(UserR
 @auth_router.post("/token")
 async def get_token(request: Request, user_data: dict = Body()):
     """Get auth token by login data (username, password) in request Body"""
-    return {"access_token": request.app.state.login_manager.create_token(user_data)}
+    return {"access_token": request.app.state.auth_manager.create_token(user_data)}
 
 
 @auth_router.get("/me")
