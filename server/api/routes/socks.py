@@ -101,7 +101,7 @@ class ConnectionManager:
     def __init__(self):
         self.connections: dict[str, list] = {}
 
-    async def connect(self, websocket, game_id: str):
+    async def connect(self, websocket, game_id: str) -> None:
         await websocket.accept()
         if game_id in self.connections:
             if len(self.connections[game_id]) < 2:
@@ -111,7 +111,12 @@ class ConnectionManager:
         else:
             self.connections[game_id] = [websocket]
 
+    async def broadcast(self, game_id: str, data: dict) -> None:
+        for ws in self.connections[game_id]:
+            await ws.send_json(data)
 
+
+connection_manager = ConnectionManager()
 
 
 @router.websocket('/chess/{game_id}/')
@@ -119,7 +124,7 @@ async def sock_chess(
         ws: WebSocket,
         game_id: str,
 ):
-    await ws.accept()
+    await connection_manager.connect(websocket=ws, game_id=game_id)
     while True:
-        move = await ws.receive_json()
-        await ws.send_json(move)
+        move_data = await ws.receive_json()
+        await connection_manager.broadcast(game_id=game_id, data=move_data)
