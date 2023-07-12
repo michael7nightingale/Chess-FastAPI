@@ -12,7 +12,10 @@ class Chess:
         self.last_activated: Figure | None = None
         self.init_figures()
 
-    def init_figures(self):
+    def changeAccessColor(self) -> None:
+        self.access_color = next(self.access_queue)
+
+    def init_figures(self) -> None:
         """Translate symbols to objects."""
         for i in range(8):
             for j in range(8):
@@ -60,7 +63,7 @@ class Chess:
     def __iter__(self):
         return itertools.chain(*self.chessboard)
 
-    def get_figure(self, id_: str):
+    def get_figure(self, id_: str) -> Figure:
         row_idx, column_idx = self.id_to_idx(id_)
         return self.chessboard[row_idx][column_idx]
 
@@ -75,10 +78,16 @@ class Chess:
     def idx_to_id(cls, row: int, column: int) -> str:
         return f"{LETTERS[column]}{8 - row}"
 
-    def deactivate_all(self):
+    def deactivate_all(self) -> None:
         for i in self:
             i.active = False
         self.last_activated = None
+
+    def move_declarative(self, from_id, to_id) -> None:
+        to_figure = self.get_figure(to_id)
+        from_figure = self.get_figure(from_id)
+        from_figure.move(to_figure)
+        self.deactivate_all()
 
     def move(self, cell_id: str):
         figure = self.get_figure(cell_id)
@@ -106,26 +115,29 @@ class Chess:
                         data = (self.last_activated.data, figure.data)
 
                         self.deactivate_all()
-                        self.access_color = next(self.access_queue)
+                        self.changeAccessColor()
 
                         return (from_id, cell_id), data,
                     else:
                         self.deactivate_all()
                         return
 
-    def replace(self, to_replace, replace_with):
+    def replace(self, to_replace, replace_with) -> None:
         self.chessboard[replace_with.row][replace_with.column] = EmptyFigure(
             data='', row=replace_with.row, chessboard=self, column=replace_with.column
         )
         self.chessboard[to_replace.row][to_replace.column] = replace_with
 
-    def change(self, to_change, change_with):
-        self.chessboard[change_with.row][change_with.column], self.chessboard[to_change.row][to_change.column] =\
+    def change(self, to_change, change_with) -> None:
+        self.chessboard[change_with.row][change_with.column], self.chessboard[to_change.row][to_change.column] = (
             self.chessboard[to_change.row][to_change.column], self.chessboard[change_with.row][change_with.column]
+        )
 
-    def inspect_line(self,
-                     begin: tuple[int, int],
-                     to: tuple[int, int]) -> bool:
+    def inspect_line(
+            self,
+            begin: tuple[int, int],
+            to: tuple[int, int]
+    ) -> bool:
         (x1, y1), (x2, y2) = begin, to
         x_step = 1 if x1 < x2 else -1
         y_step = 1 if y1 < y2 else -1
@@ -147,9 +159,11 @@ class Chess:
 
         return is_free
 
-    def inspect_diagonal(self,
-                         begin: tuple[int, int],
-                         to: tuple[int, int]) -> bool:
+    def inspect_diagonal(
+            self,
+            begin: tuple[int, int],
+            to: tuple[int, int]
+    ) -> bool:
         (x1, y1), (x2, y2) = begin, to
         x_step = 1 if x1 < x2 else -1
         y_step = 1 if y1 < y2 else -1

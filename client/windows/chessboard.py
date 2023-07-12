@@ -83,6 +83,14 @@ class ChessboardWindow(QWidget):
                     "from_data": from_data,
                     "to_data": to_data
                 }
+                from_cell = self.ui.centralwidget.findChild(QLabel, from_id)
+                if from_data and to_data:
+                    cell.setText(from_data)
+                    from_cell.setText("")
+                else:
+                    cell.setText(from_data)
+                    from_cell.setText(to_data)
+
                 self.ws().send(json.dumps(move_data))
 
     def move_figure(self, move_data: dict) -> None:
@@ -92,6 +100,7 @@ class ChessboardWindow(QWidget):
         to_data = move_data['to_data']
         to_cell = self.ui.centralwidget.findChild(QLabel, to_id)
         from_cell = self.ui.centralwidget.findChild(QLabel, from_id)
+        self.chess.move_declarative(from_id=from_id, to_id=to_id)
         if from_data and to_data:
             to_cell.setText(from_data)
             from_cell.setText("")

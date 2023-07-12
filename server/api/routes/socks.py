@@ -97,9 +97,10 @@ class ChessConnectionManager:
         else:
             self.connections[game_id] = [websocket]
 
-    async def broadcast(self, game_id: str, data: dict) -> None:
+    async def broadcast(self, websocket, game_id: str, data: dict) -> None:
         for ws in self.connections[game_id]:
-            await ws.send_json(data)
+            if websocket != ws:
+                await ws.send_json(data)
 
 
 chess_connection_manager = ChessConnectionManager()
@@ -114,4 +115,4 @@ async def sock_chess(
     await chess_connection_manager.connect(websocket=ws, game_id=game_id)
     while True:
         move_data = await ws.receive_json()
-        await chess_connection_manager.broadcast(game_id=game_id, data=move_data)
+        await chess_connection_manager.broadcast(websocket=ws, game_id=game_id, data=move_data)
