@@ -23,7 +23,7 @@ class WsMaker:
 
 
 class WsChessThread(QThread):
-    move_signal = pyqtSignal()
+    move_signal = pyqtSignal(dict)
 
     def __init__(self, parent, ws: WsMaker):
         super().__init__(parent=parent)
@@ -31,10 +31,8 @@ class WsChessThread(QThread):
 
     def run(self):
         while True:
-            move_data = self.ws().recv()
-            self.move_signal.emit(
-                **json.loads(move_data)
-            )
+            move_data = self.ws().recv(300)
+            self.move_signal.emit(json.loads(move_data))
 
 
 class ChessboardWindow(QWidget):
@@ -87,7 +85,11 @@ class ChessboardWindow(QWidget):
                 }
                 self.ws().send(json.dumps(move_data))
 
-    def move_figure(self, from_id, to_id, from_data, to_data) -> None:
+    def move_figure(self, move_data: dict) -> None:
+        from_id = move_data['from_id']
+        to_id = move_data['to_id']
+        from_data = move_data['from_data']
+        to_data = move_data['to_data']
         to_cell = self.ui.centralwidget.findChild(QLabel, to_id)
         from_cell = self.ui.centralwidget.findChild(QLabel, from_id)
         if from_data and to_data:

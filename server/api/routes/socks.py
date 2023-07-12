@@ -1,7 +1,6 @@
+from fastapi import WebSocket, APIRouter, Path, Depends
 import asyncio
 import json
-
-from fastapi import WebSocket, APIRouter, Path, Depends
 from random import choice, shuffle
 
 from package.chess import Chess
@@ -16,28 +15,60 @@ router = APIRouter(
 player_colors = {"white", "black"}
 
 
-class ChessSocket:
-    __slots__ = ("sock", "user", "game_id")
+class WaitConnectionManager:
+    def __init__(self):
+        self.connections: dict = {}
 
-    def __init__(self, sock: WebSocket, game_id: str, user):
-        self.sock = sock
-        self.game_id = game_id
-        self.user = user
+    async def connect(self, websocket, username: str) -> None:
+        if len(self.connections):
+            game_repo: GameRepository = get_socket_repository(GameRepository)()
+            user_repo: UserRepository = get_socket_repository(UserRepository)()
+            enemy_username, enemy_websocket = list(self.connections.items())[-1]
+            self.connections.pop(enemy_username)
 
-    async def accept(self) -> None:
-        await self.sock.accept()
+            # colors
+            colors = list(player_colors)
+            shuffle(colors)
+            you_color, enemy_color = colors
+            # users
+            you = user_repo.filter(username=username)
+            enemy = user_repo.filter(username=username)
+            black_user, white_user = (you, enemy) if you_color == "black" else (enemy, you)
+            new_game = game_repo.create(
+                black_user=black_user.id,
+                white_user=white_user.id,
+            )
+            # game data to send
+            game_data = {
+                "status": 201,
+                "you": username,
+                "enemy": enemy_username,
+                "game_id": new_game.id,
+                "you_color": you_color,
+                "enemy_color": enemy_color
+            }
+            # send game data
+            await enemy_websocket.send_json(game_data)
+            
+            enemy_game_data = {
+                "you": game_data['enemy'],
+                "enemy": game_data['you'],
+                "you_color": game_data['enemy_color'],
+                "enemy_color": game_data['you_color'],
+                "status": game_data['status'],
+                "game_id": game_data["game_id"]
+            }
+            await websocket.send_json(enemy_game_data)
 
-    async def listen_forever(self) -> None:
-        while True:
-            data = await self.sock.receive_text()
-            cell_id = data
-            chessboard = Chess()
+        else:
+            self.connections[username] = websocket
 
-            to_move: str | None = chessboard.move(cell_id)
-            if to_move is None:
-                pass
-            else:
-                await self.sock.send_text(f"{to_move} {cell_id}")
+    async def start_game(self, game_id: str, data: dict) -> None:
+        for ws in self.connections[game_id]:
+            await ws.send_json(data)
+
+
+wait_connection_manager = WaitConnectionManager()
 
 
 @router.websocket("/wait-player")
@@ -45,64 +76,19 @@ async def wait_for_the_plater(
     ws: WebSocket,
 
 ):
-    game_repo: GameRepository = get_socket_repository(GameRepository)()
-    user_repo: UserRepository = get_socket_repository(UserRepository)()
     await ws.accept()
     username = await ws.receive_text()
-    wasEmpty = False
+    await wait_connection_manager.connect(websocket=ws, username=username)
     while True:
-        if wasEmpty:
-            game_data = redis_session.get(username).decode()
-            if game_data != "0":
-                game_data_dict: dict = json.loads(game_data)
-                middle_game_data = {"you": game_data_dict['enemy'], "you_color": game_data_dict['enemy_color']}
-                game_data_dict['enemy'] = game_data_dict['you']
-                game_data_dict['enemy_color'] = game_data_dict['you_color']
-                game_data_dict.update(middle_game_data)
-                await ws.send_json(game_data_dict)
-                redis_session.delete(username)
-                break
-        else:
-            usernames = redis_session.keys("*")
-            if len(usernames):
-                enemy_username = choice(usernames).decode()
-                # colors
-                colors = list(player_colors)
-                shuffle(colors)
-                you_color, enemy_color = colors
-                # users
-                you = user_repo.filter(username=username)
-                enemy = user_repo.filter(username=username)
-                black_user, white_user = (you, enemy) if you_color == "black" else (enemy, you)
-                new_game = game_repo.create(
-                    black_user=black_user.id,
-                    white_user=white_user.id,
-                )
-                # game data to send
-                game_data = {
-                    "status": 201,
-                    "you": username,
-                    "enemy": enemy_username,
-                    "game_id": new_game.id,
-                    "you_color": you_color,
-                    "enemy_color": enemy_color
-                }
-                redis_session.set(enemy_username, json.dumps(game_data))
-                await ws.send_json(game_data)
-                break
-            else:
-                wasEmpty = True
-                redis_session.set(username, 0)
+        await ws.receive_text()
 
-        await asyncio.sleep(0.0001)
         
-
-class ConnectionManager:
+class ChessConnectionManager:
     def __init__(self):
         self.connections: dict[str, list] = {}
 
     async def connect(self, websocket, game_id: str) -> None:
-        await websocket.accept()
+        # await websocket.accept()
         if game_id in self.connections:
             if len(self.connections[game_id]) < 2:
                 self.connections[game_id].append(websocket)
@@ -116,15 +102,16 @@ class ConnectionManager:
             await ws.send_json(data)
 
 
-connection_manager = ConnectionManager()
+chess_connection_manager = ChessConnectionManager()
 
 
-@router.websocket('/chess/{game_id}/')
+@router.websocket('/chess/{game_id}')
 async def sock_chess(
         ws: WebSocket,
-        game_id: str,
+        game_id: str = Path(),
 ):
-    await connection_manager.connect(websocket=ws, game_id=game_id)
+    await ws.accept()
+    await chess_connection_manager.connect(websocket=ws, game_id=game_id)
     while True:
         move_data = await ws.receive_json()
-        await connection_manager.broadcast(game_id=game_id, data=move_data)
+        await chess_connection_manager.broadcast(game_id=game_id, data=move_data)
