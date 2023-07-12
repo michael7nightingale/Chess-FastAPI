@@ -97,7 +97,24 @@ async def wait_for_the_plater(
         await asyncio.sleep(0.0001)
         
 
-@router.websocket('/chessboard/{game_id}/')
+class ConnectionManager:
+    def __init__(self):
+        self.connections: dict[str, list] = {}
+
+    async def connect(self, websocket, game_id: str):
+        await websocket.accept()
+        if game_id in self.connections:
+            if len(self.connections[game_id]) < 2:
+                self.connections[game_id].append(websocket)
+            else:
+                await websocket.close()
+        else:
+            self.connections[game_id] = [websocket]
+
+
+
+
+@router.websocket('/chess/{game_id}/')
 async def sock_chess(
         ws: WebSocket,
         game_id: str,
