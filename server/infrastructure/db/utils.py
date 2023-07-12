@@ -1,5 +1,4 @@
 from infrastructure.db.models.user import User
-from package.auth import create_uuid
 from package.hasher import hash_password
 from sqlalchemy.exc import IntegrityError
 
@@ -11,7 +10,6 @@ def create_superuser(pool):
         settings = get_app_settings()
         try:
             superuser = User(
-                id=create_uuid(),
                 username=settings.SUPERUSER_NAME,
                 password=hash_password(settings.SUPERUSER_PASSWORD),
                 first_name='Michael',
@@ -20,7 +18,6 @@ def create_superuser(pool):
                 is_superuser=True,
                 is_staff=True
             )
-
             session.add(superuser)
             session.commit()
         except IntegrityError:  # superuser exists

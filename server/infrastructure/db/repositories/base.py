@@ -21,7 +21,6 @@ class BaseRepository:
     def create(self, **kwargs) -> Model:
         """Create new object in the table"""
         new_obj = self._model(
-            id=create_uuid(),
             **kwargs
         )
         self.save(new_obj)
