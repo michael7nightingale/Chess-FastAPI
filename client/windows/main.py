@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QMainWindow, QApplication
-from PyQt6.QtCore import QThread, QObject, pyqtSignal
+from PyQt6.QtCore import QThread, pyqtSignal
 from websockets.sync.client import connect
 import json
 import asyncio
@@ -84,7 +84,7 @@ class MainWindow(QMainWindow):
 
     def show_chessboard_window(self, data: dict):
         self.chessboard_window = ChessboardWindow(parent=self, config=self.config, data=data)
-        self.chessboard_window.setup()
+        self.chessboard_window.startGame()
 
     def show_chessboard_self_window(self) -> None:
         # self.setMinimumSize(self.width(), self.height())
