@@ -8,6 +8,10 @@ from chess import Chess, CHESSBOARD, NUMBERS, LETTERS
 
 
 class WsMaker:
+    """
+    Very interesting websocket maker that yields ws instance on calling,
+    and closes ws on the error or at the end of the work.
+    """
     def __init__(self, url: str):
         self.url = url
         self.ws_gen = iter(self)
@@ -23,6 +27,10 @@ class WsMaker:
 
 
 class WsChessThread(QThread):
+    """
+    PyQt thread that listens for received move data and send signals
+    to the parent window to move figure.
+    """
     move_signal = pyqtSignal(dict)
 
     def __init__(self, parent, ws: WsMaker):
@@ -65,13 +73,14 @@ class ChessboardWindow(QWidget):
                 )
 
     def startGame(self):
+        """Function for starting game."""
         self.setup()
         self.setChessboard()
         self.thread.move_signal.connect(self.move_figure)
         self.thread.start()
 
     def click_figure(self, event, cell: QLabel) -> None:
-        """Function on clicking the chessboard cell."""
+        """Event function on clicking the chessboard cell."""
         cell_id = cell.objectName()
         if self.data['you_color'] == self.chess.access_color:
             to_move: str | None = self.chess.move(cell_id)
@@ -94,6 +103,7 @@ class ChessboardWindow(QWidget):
                 self.ws().send(json.dumps(move_data))
 
     def move_figure(self, move_data: dict) -> None:
+        """Declaratively move figure to the given cell (send from socket.)"""
         from_id = move_data['from_id']
         to_id = move_data['to_id']
         from_data = move_data['from_data']

@@ -88,6 +88,7 @@ class Chess:
         from_figure = self.get_figure(from_id)
         from_figure.move(to_figure)
         self.deactivate_all()
+        self.changeAccessColor()
 
     def move(self, cell_id: str):
         figure = self.get_figure(cell_id)
