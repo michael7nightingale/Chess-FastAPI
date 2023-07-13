@@ -4,7 +4,7 @@ import json
 from websockets.sync.client import ClientConnection, connect
 
 from ui.chessboard import Ui_ChessboardWindow
-from chess import Chess, CHESSBOARD, NUMBERS, LETTERS
+from chess import CHESSBOARD, NUMBERS, LETTERS
 
 
 class WsMaker:

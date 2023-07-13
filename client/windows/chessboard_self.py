@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QLabel
-from ui.chessboard_self import Ui_ChessboardSelfWindow
 
-from chess import Chess, CHESSBOARD, NUMBERS, LETTERS
+from ui.chessboard_self import Ui_ChessboardSelfWindow
+from chess import NUMBERS, LETTERS, CHESSBOARD
 
 
 class ChessboardSelfWindow(QWidget):
@@ -13,7 +13,6 @@ class ChessboardSelfWindow(QWidget):
 
     def setChessboard(self) -> None:
         """Place all figures on the desk."""
-        self.chess = Chess()
         for row, number in enumerate(NUMBERS):
             for column, letter in enumerate(LETTERS):
                 cell_name = letter + str(number)
