@@ -1,10 +1,8 @@
 from typing import TypeVar
-
 from sqlalchemy.orm import Session
 from sqlalchemy import delete, update, select
 
 from infrastructure.db.models.base import BaseAlchemyModel
-from package.auth import create_uuid
 
 
 Model = TypeVar("Model", bound=BaseAlchemyModel)
