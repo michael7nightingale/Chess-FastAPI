@@ -84,4 +84,3 @@ class SlugGetMixin:
         """Get on unique slug"""
         query = select(self._model).where(self._model.slug == slug)
         return self._session.execute(query).scalar()
-

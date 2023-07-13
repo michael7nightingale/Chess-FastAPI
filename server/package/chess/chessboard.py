@@ -1,7 +1,12 @@
 import itertools
-from .base import CHESSBOARD, Color, LETTERS
 
-from .figures import *
+from .base import CHESSBOARD, Color, LETTERS
+from .figures import (
+    Tower, EmptyFigure,
+    Pawn, King,
+    Queen, Soldier,
+    Horse, Figure
+)
 
 
 class Chess:

@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Body, Depends, Request
 
-from api.dependencies.auth import create_token, get_superuser
+from api.dependencies.auth import get_superuser
 from api.dependencies.database import get_repository
 from infrastructure.db.repositories import UserRepository
 from infrastructure.db.models import User
-from schemas.user import UserShow, UserRegister
+from schemas.user import UserShow, UserRegister, UserLogin
 
 
 auth_router = APIRouter(prefix='/auth', tags=['Auth'])
@@ -27,7 +27,7 @@ async def register_user(user_repo: UserRepository = Depends(get_repository(UserR
 
 
 @auth_router.post("/token")
-async def get_token(request: Request, user_data: dict = Body()):
+async def get_token(request: Request, user_data: UserLogin = Body()):
     """Get auth token by login data (username, password) in request Body"""
     return {"access_token": request.app.state.auth_manager.create_token(user_data)}
 
@@ -36,4 +36,3 @@ async def get_token(request: Request, user_data: dict = Body()):
 async def get_me(request: Request):
     """Get auth token by login data (username, password) in request Body"""
     return request.user.data
-

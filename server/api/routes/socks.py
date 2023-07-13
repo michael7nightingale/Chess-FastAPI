@@ -1,12 +1,9 @@
-from fastapi import WebSocket, APIRouter, Path, Depends
-import asyncio
-import json
-from random import choice, shuffle
+from fastapi import WebSocket, APIRouter, Path
+from random import shuffle
 
 from package.chess.chessboard import Chess
-from api.dependencies import get_repository, get_socket_repository
+from api.dependencies import get_socket_repository
 from infrastructure.db.repositories import UserRepository, GameRepository
-from infrastructure.redis_ import redis_session
 
 
 router = APIRouter(
@@ -52,7 +49,7 @@ class WaitConnectionManager:
             }
             # send game data
             await enemy_websocket.send_json(game_data)
-            
+
             enemy_game_data = {
                 "you": game_data['enemy'],
                 "enemy": game_data['you'],
@@ -86,7 +83,7 @@ async def wait_for_the_plater(
     while True:  # to save websocket connection
         await ws.receive_text()
 
-        
+
 class ChessConnectionManager:
     """
     Class for managing active games.
@@ -110,7 +107,7 @@ class ChessConnectionManager:
                 "users": [websocket],
                 "chessboard": Chess(),
             }
-            
+
     async def broadcast(self, game_id: str, data: dict) -> None:
         """Send data to all users` websockets associated with the game."""
         for ws in self.connections[game_id]['users']:

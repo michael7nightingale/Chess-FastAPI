@@ -1,6 +1,6 @@
-from bs4 import BeautifulSoup
-
-
+# from bs4 import BeautifulSoup
+#
+#
 # def generate_chessboard():
 #     with open('../templates/chess/chess.html', 'rb') as htmlFile:
 #         htmlText = htmlFile.read()

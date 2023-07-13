@@ -16,4 +16,3 @@ class LobbyWindow(QWidget):
         self.ui.setupUi(self.main_window)
         self.ui.start_self_game_button.clicked.connect(self.main_window.on_start_self_game)
         self.ui.join_game_button.clicked.connect(self.main_window.on_join_game)
-

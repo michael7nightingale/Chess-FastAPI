@@ -1,12 +1,10 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import delete
 
 from infrastructure.db.models import User
 from infrastructure.db.repositories.base import BaseRepository
-from schemas.user import UserShow, UserLogin, UserRegister
+from schemas.user import UserLogin, UserRegister
 
 from package.hasher import hash_password, verify_password
-from package.auth import create_uuid
 
 
 class UserRepository(BaseRepository):

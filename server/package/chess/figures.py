@@ -16,7 +16,11 @@ class Pawn(Figure):
     def move(self, other: Figure):
         if isinstance(other, EmptyFigure):    # check if fig can be moved to an empty cell
             if self.row == self.__initial_y:    # when pawn can move 2 cells
-                is_moved = self - other == (2 * self.__coef, self.__x_step) or self - other == (self.__y_step, self.__x_step)
+                is_moved = (
+                    self - other == (2 * self.__coef, self.__x_step)
+                    or
+                    self - other == (self.__y_step, self.__x_step)
+                )
             else:   # usual 1-cell move
                 is_moved = self - other == (self.__y_step, self.__x_step)
             if is_moved:
@@ -149,4 +153,3 @@ class Queen(Figure):
 
     def get_all_moves(self):
         pass
-
