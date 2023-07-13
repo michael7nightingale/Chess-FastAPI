@@ -2,16 +2,18 @@ from PyQt6.QtWidgets import QMainWindow, QApplication
 from PyQt6.QtCore import QThread, pyqtSignal
 from websockets.sync.client import connect
 import json
-import asyncio
 
 from requestor import Requestor
 from . import LobbyWindow, RegistrationWindow, ChessboardSelfWindow, LoginWindow, ChessboardWindow
 from ui.main import Ui_MainWindow
 from config import Config
-from qt_tools import show_exit_dialog
 
 
 class WsWaitThread(QThread):
+    """
+    PyQt thread for waiting websocket data on the game begin.
+    Sends signal to the main window to start game.
+    """
     finished = pyqtSignal(dict)
 
     def __init__(self, main_window):
@@ -22,7 +24,6 @@ class WsWaitThread(QThread):
         with connect("ws://localhost:8001/ws/wait-player") as ws:
             ws.send(self.main_window.config['user']['username'])
             data = ws.recv()
-            print(data)
             self.finished.emit(json.loads(data))
 
 
@@ -50,8 +51,6 @@ class MainWindow(QMainWindow):
         self.check_token()
 
     def wait_for_players(self) -> dict:
-        # thread = WsWaitWorker(self)
-        # thread.start()
         self.thread = WsWaitThread(self)
         self.thread.finished.connect(self.show_chessboard_window)
         self.thread.start()

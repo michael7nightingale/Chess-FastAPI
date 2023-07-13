@@ -8,6 +8,9 @@ from chess import Chess, CHESSBOARD, NUMBERS, LETTERS
 
 
 class WsMaker:
+    """
+    Very interesting class to generate ws internally in the context manager.
+    """
     def __init__(self, url: str):
         self.url = url
         self.ws_gen = iter(self)
@@ -23,6 +26,9 @@ class WsMaker:
 
 
 class WsChessThread(QThread):
+    """
+    PyQt thread for receiving ws data and sending signal to the parent window.
+    """
     move_signal = pyqtSignal(dict)
 
     def __init__(self, parent, ws: WsMaker):
@@ -31,7 +37,7 @@ class WsChessThread(QThread):
 
     def run(self):
         while True:
-            move_data = self.ws().recv(300)
+            move_data = self.ws().recv(1000)
             self.move_signal.emit(json.loads(move_data))
 
 
@@ -64,6 +70,7 @@ class ChessboardWindow(QWidget):
                 )
 
     def startGame(self):
+        """Start game function."""
         self.setup()
         self.setChessboard()
         self.thread.move_signal.connect(self.move_figure)
@@ -80,6 +87,7 @@ class ChessboardWindow(QWidget):
         self.ws().send(json.dumps(move_data))
 
     def move_figure(self, move_data: dict) -> None:
+        """Function that moves GUI figures"""
         from_id = move_data['from_id']
         to_id = move_data['to_id']
         from_data = move_data['from_data']
