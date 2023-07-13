@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QLabel
-from ui.chessboard_self import Ui_ChessboardSelfWindow
 
-from chess import Chess, CHESSBOARD, NUMBERS, LETTERS
+from ui.chessboard_self import Ui_ChessboardSelfWindow
+from chess import NUMBERS, LETTERS, CHESSBOARD, Chess
 
 
 class ChessboardSelfWindow(QWidget):

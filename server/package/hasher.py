@@ -7,4 +7,3 @@ def hash_password(psw: str) -> str:
 
 def verify_password(psw: str, hash_) -> bool:
     return bcrypt_sha256.verify(psw, hash_)
-

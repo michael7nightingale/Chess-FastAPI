@@ -4,13 +4,12 @@ import json
 from websockets.sync.client import ClientConnection, connect
 
 from ui.chessboard import Ui_ChessboardWindow
-from chess import Chess, CHESSBOARD, NUMBERS, LETTERS
+from chess import CHESSBOARD, NUMBERS, LETTERS
 
 
 class WsMaker:
     """
-    Very interesting websocket maker that yields ws instance on calling,
-    and closes ws on the error or at the end of the work.
+    Very interesting class to generate ws internally in the context manager.
     """
     def __init__(self, url: str):
         self.url = url
@@ -28,8 +27,7 @@ class WsMaker:
 
 class WsChessThread(QThread):
     """
-    PyQt thread that listens for received move data and send signals
-    to the parent window to move figure.
+    PyQt thread for receiving ws data and sending signal to the parent window.
     """
     move_signal = pyqtSignal(dict)
 
@@ -39,7 +37,7 @@ class WsChessThread(QThread):
 
     def run(self):
         while True:
-            move_data = self.ws().recv(300)
+            move_data = self.ws().recv(1000)
             self.move_signal.emit(json.loads(move_data))
 
 
@@ -64,7 +62,6 @@ class ChessboardWindow(QWidget):
 
     def setChessboard(self) -> None:
         """Place all figures on the desk."""
-        self.chess = Chess()
         for row, number in enumerate(NUMBERS):
             for column, letter in enumerate(LETTERS):
                 cell_name = letter + str(number)
@@ -73,44 +70,30 @@ class ChessboardWindow(QWidget):
                 )
 
     def startGame(self):
-        """Function for starting game."""
+        """Start game function."""
         self.setup()
         self.setChessboard()
         self.thread.move_signal.connect(self.move_figure)
         self.thread.start()
 
     def click_figure(self, event, cell: QLabel) -> None:
-        """Event function on clicking the chessboard cell."""
+        """Function on clicking the chessboard cell."""
         cell_id = cell.objectName()
-        if self.data['you_color'] == self.chess.access_color:
-            to_move: str | None = self.chess.move(cell_id)
-            if to_move is not None:
-                (from_id, to_id), (from_data, to_data) = to_move
-                move_data = {
-                    "from_id": from_id,
-                    "to_id": to_id,
-                    "from_data": from_data,
-                    "to_data": to_data
-                }
-                from_cell = self.ui.centralwidget.findChild(QLabel, from_id)
-                if from_data and to_data:
-                    cell.setText(from_data)
-                    from_cell.setText("")
-                else:
-                    cell.setText(from_data)
-                    from_cell.setText(to_data)
-
-                self.ws().send(json.dumps(move_data))
+        move_data = {
+            "cell_id": cell_id,
+            "user": self.data['you'],
+            "color": self.data['you_color']
+        }
+        self.ws().send(json.dumps(move_data))
 
     def move_figure(self, move_data: dict) -> None:
-        """Declaratively move figure to the given cell (send from socket.)"""
+        """Function that moves GUI figures"""
         from_id = move_data['from_id']
         to_id = move_data['to_id']
         from_data = move_data['from_data']
         to_data = move_data['to_data']
         to_cell = self.ui.centralwidget.findChild(QLabel, to_id)
         from_cell = self.ui.centralwidget.findChild(QLabel, from_id)
-        self.chess.move_declarative(from_id=from_id, to_id=to_id)
         if from_data and to_data:
             to_cell.setText(from_data)
             from_cell.setText("")

@@ -11,14 +11,14 @@ from config import Config
 
 class WsWaitThread(QThread):
     """
-    PyQt thread that waits for the game data from websocket and send signal
-    to the parent window.
+    PyQt thread for waiting websocket data on the game begin.
+    Sends signal to the main window to start game.
     """
     finished = pyqtSignal(dict)
 
-    def __init__(self, parent):
-        super().__init__(parent=parent)
-        self.main_window = parent
+    def __init__(self, main_window):
+        super().__init__()
+        self.main_window = main_window
 
     def run(self):
         with connect("ws://localhost:8001/ws/wait-player") as ws:
@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         # configuration
         self.config: Config = Config.load_config()
 
-        # setup sub windows
+        # setup subwindows
         self.login_window = LoginWindow(self, self.config)
         self.registration_window = RegistrationWindow(self, self.config)
         self.lobby_window = LobbyWindow(self, self.config)
@@ -50,8 +50,7 @@ class MainWindow(QMainWindow):
         self.requestor.check_connection()
         self.check_token()
 
-    def wait_for_players(self) -> None:
-        """Function for waiting for players."""
+    def wait_for_players(self) -> dict:
         self.thread = WsWaitThread(self)
         self.thread.finished.connect(self.show_chessboard_window)
         self.thread.start()
@@ -80,22 +79,20 @@ class MainWindow(QMainWindow):
             self.registration_window.show()
 
     def show_lobby_window(self) -> None:
-        """Show game lobby window."""
         self.lobby_window.setup()
 
     def show_chessboard_window(self, data: dict):
-        """Show chessboard multiplayer game window."""
         self.chessboard_window = ChessboardWindow(parent=self, config=self.config, data=data)
         self.chessboard_window.startGame()
 
     def show_chessboard_self_window(self) -> None:
-        """Show chessboard one-self-player game window."""
+        # self.setMinimumSize(self.width(), self.height())
+        # self.setMaximumSize(self.width(), self.height())
         self.chessboard_self_window.setup()
 
     def on_start_self_game(self, event) -> None:
-        """Event function on clicking button `Start self game`."""
         self.show_chessboard_self_window()
 
     def on_join_game(self, event) -> None:
-        """Event function on clicking button `Join game`."""
         self.wait_for_players()
+        # self.show_chessboard_window(data=data)

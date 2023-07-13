@@ -1,8 +1,5 @@
-import os
-
 import pytest
 from httpx import AsyncClient
-
 from package.auth import decode_access_token
 from starlette import status
 
@@ -52,7 +49,7 @@ class TestUser:
             client: AsyncClient,
             user_data: dict
     ):
-        resp_reg = await client.post(url=get_auth_url("register_user"), json=user_data)
+        await client.post(url=get_auth_url("register_user"), json=user_data)
         login_data = {
             "username": user_data['username'],
             "password": user_data['password']
@@ -96,8 +93,6 @@ class TestUser:
         resp = await client.get(url=get_auth_url("get_all_users"), headers=common_headers)
         assert resp.status_code == status.HTTP_403_FORBIDDEN
         assert resp.json() == {"detail": AuthDetail.no_permissions.value}
-
-
 
     # @pytest.mark.asyncio
     # async def test_environ(self):

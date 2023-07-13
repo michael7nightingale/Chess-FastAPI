@@ -46,7 +46,7 @@ class RegistrationWindow(QWidget):
                 "password": password,
                 "email": email
             }
-            response = self.main_window.requestor.post_unauthorized(
+            self.main_window.requestor.post_unauthorized(
                 url=self.config["base_url"] + "auth/register",
                 json=data,
                 status_code=201,

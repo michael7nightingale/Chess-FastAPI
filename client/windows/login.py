@@ -54,7 +54,6 @@ class LoginWindow(QWidget):
             )
             self.config['user'] = user_data_response.json()
 
-
             self.close()
             self.main_window.show_lobby_window()
 

@@ -1,10 +1,8 @@
-from fastapi import WebSocket, APIRouter, Path, Depends
-import asyncio
-import json
-from random import choice, shuffle
+from fastapi import WebSocket, APIRouter, Path
+from random import shuffle
 
-from package.chess import Chess
-from api.dependencies import get_repository, get_socket_repository
+from package.chess.chessboard import Chess
+from api.dependencies import get_socket_repository
 from infrastructure.db.repositories import UserRepository, GameRepository
 
 
@@ -16,19 +14,16 @@ player_colors = {"white", "black"}
 
 class WaitConnectionManager:
     """
-    Connection manager for waiting-for-players lobby.
+    Class for managing waiting players.
     """
     def __init__(self):
         self.connections: dict = {}
 
     async def connect(self, websocket, username: str) -> None:
-        """
-        If there are not any players, put player into queue, else take the last player and go playing.
-        """
         if len(self.connections):
             game_repo: GameRepository = get_socket_repository(GameRepository)()
             user_repo: UserRepository = get_socket_repository(UserRepository)()
-            enemy_username, enemy_websocket = list(self.connections.items())[0]
+            enemy_username, enemy_websocket = list(self.connections.items())[-1]
             self.connections.pop(enemy_username)
 
             # colors
@@ -53,8 +48,8 @@ class WaitConnectionManager:
                 "enemy_color": enemy_color
             }
             # send game data
-            await websocket.send_json(game_data)
-            
+            await enemy_websocket.send_json(game_data)
+
             enemy_game_data = {
                 "you": game_data['enemy'],
                 "enemy": game_data['you'],
@@ -63,10 +58,14 @@ class WaitConnectionManager:
                 "status": game_data['status'],
                 "game_id": game_data["game_id"]
             }
-            await enemy_websocket.send_json(enemy_game_data)
+            await websocket.send_json(enemy_game_data)
 
         else:
             self.connections[username] = websocket
+
+    async def start_game(self, game_id: str, data: dict) -> None:
+        for ws in self.connections[game_id]:
+            await ws.send_json(data)
 
 
 wait_connection_manager = WaitConnectionManager()
@@ -77,36 +76,57 @@ async def wait_for_the_plater(
     ws: WebSocket,
 
 ):
-    """Endpoint for waiting for other players. """
+    """Endpoint for waiting for players in the queue."""
     await ws.accept()
     username = await ws.receive_text()
     await wait_connection_manager.connect(websocket=ws, username=username)
-    while True:  # just to save socket connection 
+    while True:  # to save websocket connection
         await ws.receive_text()
 
-        
+
 class ChessConnectionManager:
     """
-    Chess game connection manager. Collects websockets to the game rooms.
+    Class for managing active games.
     """
     def __init__(self):
-        self.connections: dict[str, list] = {}
+        self.connections: dict = {}
 
     async def connect(self, websocket, game_id: str) -> None:
-        """Connect to the game."""
+        """On connecting websocket."""
         if game_id in self.connections:
-            if len(self.connections[game_id]) < 2:
-                self.connections[game_id].append(websocket)
-            else:
-                await websocket.close()
+            match len(self.connections):
+                case 0:
+                    self.connections[game_id]['chessboard'] = Chess()
+                    self.connections[game_id]["users"].append(websocket)
+                case 1:
+                    self.connections[game_id]["users"].append(websocket)
+                case _:
+                    await websocket.close()
         else:
-            self.connections[game_id] = [websocket]
+            self.connections[game_id] = {
+                "users": [websocket],
+                "chessboard": Chess(),
+            }
 
-    async def broadcast(self, websocket, game_id: str, data: dict) -> None:
-        """Send move of websocket to all sockets in the game excluding websocket."""
-        for ws in self.connections[game_id]:
-            if websocket != ws:
-                await ws.send_json(data)
+    async def broadcast(self, game_id: str, data: dict) -> None:
+        """Send data to all users` websockets associated with the game."""
+        for ws in self.connections[game_id]['users']:
+            await ws.send_json(data)
+
+    async def move(self, game_id: str, data: dict):
+        """Make a move for the game chessboard."""
+        chessboard = self.connections[game_id]["chessboard"]
+        if chessboard.access_color == data['color']:
+            to_move = chessboard.move(data["cell_id"])
+            if to_move is not None:
+                (from_id, to_id), (from_data, to_data) = to_move
+                move_data = {
+                    "to_id": to_id,
+                    "from_id": from_id,
+                    "from_data": from_data,
+                    "to_data": to_data
+                }
+                await self.broadcast(game_id, move_data)
 
 
 chess_connection_manager = ChessConnectionManager()
@@ -117,9 +137,9 @@ async def sock_chess(
         ws: WebSocket,
         game_id: str = Path(),
 ):
-    """Endpoint for playing chess (changing moves)."""
+    """Endpoint for playing chess game."""
     await ws.accept()
     await chess_connection_manager.connect(websocket=ws, game_id=game_id)
-    while True:
-        move_data = await ws.receive_json()
-        await chess_connection_manager.broadcast(websocket=ws, game_id=game_id, data=move_data)
+    while True:  # listening for moves
+        data: dict = await ws.receive_json()
+        await chess_connection_manager.move(game_id, data)
