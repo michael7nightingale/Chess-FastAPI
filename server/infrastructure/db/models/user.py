@@ -1,4 +1,5 @@
 from sqlalchemy import Column, DateTime, String, Boolean, func
+from uuid import uuid4
 
 from infrastructure.db import Base, TableMixin
 
@@ -6,7 +7,7 @@ from infrastructure.db import Base, TableMixin
 class User(Base, TableMixin):
     __tablename__ = 'users'
 
-    id = Column(String(100), primary_key=True)
+    id = Column(String(100), primary_key=True, default=lambda: str(uuid4()))
     username = Column(String(40), unique=True)
     first_name = Column(String(40), nullable=True)
     last_name = Column(String(40), nullable=True)
