@@ -85,22 +85,39 @@ async def wait_for_the_plater(
         
 class ChessConnectionManager:
     def __init__(self):
-        self.connections: dict[str, list] = {}
+        self.connections: dict = {}
 
     async def connect(self, websocket, game_id: str) -> None:
         # await websocket.accept()
         if game_id in self.connections:
-            if len(self.connections[game_id]) < 2:
-                self.connections[game_id].append(websocket)
-            else:
-                await websocket.close()
+            match len(self.connections):
+                case 0:
+                    self.connections[game_id]['chessboard'] = Chess()
+                    self.connections[game_id]["users"].append(websocket)
+                case 1:
+                    self.connections[game_id]["users"].append(websocket)
+                case _:
+                    await websocket.close()
         else:
-            self.connections[game_id] = [websocket]
+            self.connections[game_id]["users"] = [websocket]
 
-    async def broadcast(self, websocket, game_id: str, data: dict) -> None:
+    async def broadcast(self, game_id: str, data: dict) -> None:
         for ws in self.connections[game_id]:
-            if websocket != ws:
-                await ws.send_json(data)
+            await ws.send_json(data)
+
+    async def move(self, game_id, data: dict):
+        chessboard = self.connections[game_id]["chessboard"]
+        if chessboard.access_color == data['color']:
+            to_move = chessboard.to_move(data["cell_id"])
+            if to_move is not None:
+                from_id, to_id, from_data, to_data = to_move
+                move_data = {
+                    "to_id": to_id,
+                    "from_id": from_id,
+                    "from_data": from_data,
+                    "to_data": to_data
+                }
+                await self.broadcast(game_id, move_data)
 
 
 chess_connection_manager = ChessConnectionManager()
@@ -114,5 +131,5 @@ async def sock_chess(
     await ws.accept()
     await chess_connection_manager.connect(websocket=ws, game_id=game_id)
     while True:
-        move_data = await ws.receive_json()
-        await chess_connection_manager.broadcast(websocket=ws, game_id=game_id, data=move_data)
+        data = await ws.receive_json()
+        await chess_connection_manager.move(game_id, data)
