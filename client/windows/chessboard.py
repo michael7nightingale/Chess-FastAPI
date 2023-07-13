@@ -56,7 +56,6 @@ class ChessboardWindow(QWidget):
 
     def setChessboard(self) -> None:
         """Place all figures on the desk."""
-        self.chess = Chess()
         for row, number in enumerate(NUMBERS):
             for column, letter in enumerate(LETTERS):
                 cell_name = letter + str(number)
@@ -73,25 +72,12 @@ class ChessboardWindow(QWidget):
     def click_figure(self, event, cell: QLabel) -> None:
         """Function on clicking the chessboard cell."""
         cell_id = cell.objectName()
-        if self.data['you_color'] == self.chess.access_color:
-            to_move: str | None = self.chess.move(cell_id)
-            if to_move is not None:
-                (from_id, to_id), (from_data, to_data) = to_move
-                move_data = {
-                    "from_id": from_id,
-                    "to_id": to_id,
-                    "from_data": from_data,
-                    "to_data": to_data
-                }
-                from_cell = self.ui.centralwidget.findChild(QLabel, from_id)
-                if from_data and to_data:
-                    cell.setText(from_data)
-                    from_cell.setText("")
-                else:
-                    cell.setText(from_data)
-                    from_cell.setText(to_data)
-
-                self.ws().send(json.dumps(move_data))
+        move_data = {
+            "cell_id": cell_id,
+            "user": self.data['you'],
+            "color": self.data['you_color']
+        }
+        self.ws().send(json.dumps(move_data))
 
     def move_figure(self, move_data: dict) -> None:
         from_id = move_data['from_id']
@@ -100,7 +86,6 @@ class ChessboardWindow(QWidget):
         to_data = move_data['to_data']
         to_cell = self.ui.centralwidget.findChild(QLabel, to_id)
         from_cell = self.ui.centralwidget.findChild(QLabel, from_id)
-        self.chess.move_declarative(from_id=from_id, to_id=to_id)
         if from_data and to_data:
             to_cell.setText(from_data)
             from_cell.setText("")
