@@ -17,6 +17,7 @@ class Chess:
 
     def init_figures(self) -> None:
         """Translate symbols to objects."""
+        print(self.chessboard)
         for i in range(8):
             for j in range(8):
                 data = self.chessboard[i][j]
@@ -51,12 +52,12 @@ class Chess:
 
     @property
     def chessboard(self):
-        return self.__chessboard
+        return self._chessboard
 
     @chessboard.setter
     def chessboard(self, new_value):
         if not hasattr(self, '__chessboard'):
-            self.__chessboard = new_value
+            self._chessboard = new_value
         else:
             raise TypeError("Chessboard cant`t be changed.")
 
@@ -64,11 +65,13 @@ class Chess:
         return itertools.chain(*self.chessboard)
 
     def get_figure(self, id_: str) -> Figure:
+        """Get figure by its is on the chessboard."""
         row_idx, column_idx = self.id_to_idx(id_)
         return self.chessboard[row_idx][column_idx]
 
     @classmethod
     def id_to_idx(cls, id_: str) -> tuple[int, int]:
+        """Convert cell id to idx."""
         letter, number = id_
         column_idx = LETTERS.index(letter)
         row_idx = 8 - int(number)
@@ -76,21 +79,17 @@ class Chess:
 
     @classmethod
     def idx_to_id(cls, row: int, column: int) -> str:
+        """Convert cell idx to id."""
         return f"{LETTERS[column]}{8 - row}"
 
     def deactivate_all(self) -> None:
+        """Set all cells` state to unactivated."""
         for i in self:
             i.active = False
         self.last_activated = None
 
-    def move_declarative(self, from_id, to_id) -> None:
-        to_figure = self.get_figure(to_id)
-        from_figure = self.get_figure(from_id)
-        from_figure.move(to_figure)
-        self.deactivate_all()
-        self.changeAccessColor()
-
     def move(self, cell_id: str):
+        """Move figure function."""
         figure = self.get_figure(cell_id)
         if self.last_activated is None:
             color_match = self.access_color == figure.color
@@ -124,12 +123,14 @@ class Chess:
                         return
 
     def replace(self, to_replace, replace_with) -> None:
+        """Cut a figure."""
         self.chessboard[replace_with.row][replace_with.column] = EmptyFigure(
             data='', row=replace_with.row, chessboard=self, column=replace_with.column
         )
         self.chessboard[to_replace.row][to_replace.column] = replace_with
 
     def change(self, to_change, change_with) -> None:
+        """Change a figure."""
         self.chessboard[change_with.row][change_with.column], self.chessboard[to_change.row][to_change.column] = (
             self.chessboard[to_change.row][to_change.column], self.chessboard[change_with.row][change_with.column]
         )
@@ -139,6 +140,10 @@ class Chess:
             begin: tuple[int, int],
             to: tuple[int, int]
     ) -> bool:
+        """
+        Function that check if there is busy cell on the given line
+        (row, column) by coordinates of the chessboard matrix.
+        """
         (x1, y1), (x2, y2) = begin, to
         x_step = 1 if x1 < x2 else -1
         y_step = 1 if y1 < y2 else -1
@@ -165,6 +170,10 @@ class Chess:
             begin: tuple[int, int],
             to: tuple[int, int]
     ) -> bool:
+        """
+        Function that check if there is busy cell on the given diagonal
+        by coordinates  of the chessboard matrix.
+        """
         (x1, y1), (x2, y2) = begin, to
         x_step = 1 if x1 < x2 else -1
         y_step = 1 if y1 < y2 else -1
