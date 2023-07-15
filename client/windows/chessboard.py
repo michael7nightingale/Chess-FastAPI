@@ -75,7 +75,7 @@ class ChessboardWindow(QWidget):
         """Start game function."""
         self.setup()
         self.setChessboard()
-        self.thread.move_signal.connect(self.move_figure)
+        self.thread.move_signal.connect(self.process_move)
         self.thread.start()
 
     def click_figure(self, event, cell: QLabel) -> None:
