@@ -1,13 +1,14 @@
-from datetime import datetime
-
+from fastapi import WebSocket, APIRouter, Path, Request, Depends
 from starlette.websockets import WebSocketDisconnect
-from fastapi import WebSocket, APIRouter, Path
+from fastapi_authtools import login_required
+from datetime import datetime
 from functools import wraps
 import asyncio
+from itertools import chain
 from random import shuffle
 
 from package.chess.chessboard import Chess
-from api.dependencies import get_socket_repository
+from api.dependencies import get_socket_repository, get_repository
 from infrastructure.db.repositories import UserRepository, GameRepository
 
 
@@ -137,15 +138,15 @@ class ChessConnectionManager:
                 }
                 await self.broadcast(game_id, move_data)
                 chessboard.finish_game()
-                if chessboard.is_finished:
-                    print(1231, )
-                    data = {
-                        "status": 302,
-                        "winner": data["you"]
-                    }
-                    await self.broadcast(game_id, data)
-                    print(1232345456)
-                    await self.finish_game(game_id, data)
+                # if chessboard.is_finished:
+                #     print(1231, )
+                #     data = {
+                #         "status": 302,
+                #         "winner": data["you"]
+                #     }
+                #     await self.broadcast(game_id, data)
+                #     print(1232345456)
+                #     await self.finish_game(game_id, data)
 
     async def finish_game(self, game_id: str, data) -> None:
         for user in self.connections[game_id]['users']:
@@ -201,3 +202,17 @@ async def sock_chess(
     while True:  # listening for moves
         data: dict = await ws.receive_json()
         await chess_connection_manager.move(game_id, data)
+
+
+@chess_router.get("/my-games/")
+@login_required
+async def get_my_games(
+        request: Request,
+        game_repo: GameRepository = Depends(get_repository(GameRepository))
+):
+    white_games = game_repo.filter(black_user=request.user.id)
+    black_games = game_repo.filter(white_user=request.user.id)
+    return sorted(
+        chain(black_games, white_games),
+        key=lambda game: game.time_start
+    )

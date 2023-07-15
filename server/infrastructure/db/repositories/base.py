@@ -34,10 +34,15 @@ class BaseRepository:
         query = select(self._model).where(self._model.id == id_)
         return self._session.execute(query).scalar_one_or_none()
 
-    def filter(self, **kwargs) -> Model:
+    def get_by(self, **kwargs) -> Model:
         """Filter all objects by kwargs"""
         query = select(self._model).filter_by(**kwargs)
         return self._session.execute(query).scalar_one_or_none()
+
+    def filter(self, **kwargs) -> list[Model]:
+        """Filter all objects by kwargs"""
+        query = select(self._model).filter_by(**kwargs)
+        return self._session.execute(query).scalars().all()
 
     def all(self) -> list[Model]:
         """Get all objects from the table"""

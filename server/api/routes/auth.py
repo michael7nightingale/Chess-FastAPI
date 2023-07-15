@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body, Depends, Request
+from fastapi_authtools.exceptions import raise_credentials_error
 
 from api.dependencies.auth import get_superuser
 from api.dependencies.database import get_repository
@@ -27,9 +28,16 @@ async def register_user(user_repo: UserRepository = Depends(get_repository(UserR
 
 
 @auth_router.post("/token")
-async def get_token(request: Request, user_data: UserLogin = Body()):
+async def get_token(
+        request: Request,
+        user_data: UserLogin = Body(),
+        user_repo: UserRepository = Depends(get_repository(UserRepository))
+):
     """Get auth token by login data (username, password) in request Body"""
-    return {"access_token": request.app.state.auth_manager.create_token(user_data)}
+    user = user_repo.login(user_data)
+    if user is None:
+        raise_credentials_error()
+    return {"access_token": request.app.state.auth_manager.create_token(UserShow(**user.as_dict()))}
 
 
 @auth_router.get("/me")

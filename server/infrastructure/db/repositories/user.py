@@ -20,9 +20,9 @@ class UserRepository(BaseRepository):
         new_user = super().create(**user_schema.dict())
         return new_user
 
-    def login(self, user_schema: UserLogin) -> User:
-        user = self.filter(username=user_schema.username)
+    def login(self, user_schema: UserLogin) -> User | None:
+        user = self.get_by(username=user_schema.username)
         if verify_password(user_schema.password, user.password):
             return user
         else:
-            raise ValueError
+            return None
