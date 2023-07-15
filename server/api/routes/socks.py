@@ -124,7 +124,10 @@ class ChessConnectionManager:
                     "to_id": to_id,
                     "from_id": from_id,
                     "from_data": from_data,
-                    "to_data": to_data
+                    "to_data": to_data,
+                    "move_user": data["user"],
+                    "move_color": data["color"],
+                    "new_color": chessboard.access_color
                 }
                 await self.broadcast(game_id, move_data)
 
