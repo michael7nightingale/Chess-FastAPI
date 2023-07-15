@@ -48,6 +48,7 @@ class BaseRepository:
         """Update object by pk (id) with values kwargs"""
         query = update(self._model).where(self._model.id == id_).values(**kwargs)
         self._session.execute(query)
+        self.commit()
 
     def delete(self, id_) -> None:
         """Delete object by pk (id)"""

@@ -50,6 +50,9 @@ class MainWindow(QMainWindow):
         self.requestor.check_connection()
         self.check_token()
 
+    def setup(self):
+        self.ui.setupUi(self)
+
     def wait_for_players(self) -> dict:
         self.thread = WsWaitThread(self)
         self.thread.finished.connect(self.show_chessboard_window)

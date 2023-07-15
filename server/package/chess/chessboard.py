@@ -15,10 +15,14 @@ class Chess:
         self.access_color = next(self.access_queue)
         self.chessboard = [list(row) for row in chessboard]
         self.last_activated: Figure | None = None
+        self.is_finished = False
         self.init_figures()
 
     def changeAccessColor(self) -> None:
         self.access_color = next(self.access_queue)
+
+    def finish_game(self):
+        self.is_finished = True
 
     def init_figures(self) -> None:
         """Translate symbols to objects."""

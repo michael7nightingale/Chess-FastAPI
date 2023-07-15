@@ -6,6 +6,7 @@ from websockets.sync.client import ClientConnection, connect
 from ui.chessboard import Ui_ChessboardWindow
 from chess import CHESSBOARD, NUMBERS, LETTERS
 from models import Move
+from qt_tools import show_dialog
 
 
 class WsMaker:
@@ -31,6 +32,7 @@ class WsChessThread(QThread):
     PyQt thread for receiving ws data and sending signal to the parent window.
     """
     move_signal = pyqtSignal(Move)
+    after_game_signal = pyqtSignal(str)
 
     def __init__(self, parent, ws: WsMaker):
         super().__init__(parent=parent)
@@ -38,9 +40,21 @@ class WsChessThread(QThread):
 
     def run(self):
         while True:
-            move_data = self.ws().recv(1000)
-            move = Move(**json.loads(move_data))
-            self.move_signal.emit(move)
+            try:
+                move_data = self.ws().recv()
+                move_data_dict = json.loads(move_data)
+                status = move_data_dict['status']
+                match status:
+                    case 200:
+                        move = Move(**move_data_dict)
+                        self.move_signal.emit(move)
+                    case 303:
+                        return self.after_game_signal.emit(move_data_dict['message'])
+                    case 401:
+                        return self.after_game_signal.emit(move_data_dict['message'])
+            except Exception as e:
+                # raise e
+                break
 
 
 class ChessboardWindow(QWidget):
@@ -76,6 +90,7 @@ class ChessboardWindow(QWidget):
         self.setup()
         self.setChessboard()
         self.thread.move_signal.connect(self.process_move)
+        self.thread.after_game_signal.connect(self.on_after_game)
         self.thread.start()
 
     def click_figure(self, event, cell: QLabel) -> None:
@@ -120,3 +135,7 @@ class ChessboardWindow(QWidget):
     def add_move_to_list(self, from_id: str, to_id: str, user: str) -> None:
         item = f"{from_id} -> {to_id} ({user})"
         self.ui.moves_list.addItem(item)
+
+    def on_after_game(self, message: str):
+        show_dialog(self, message)
+        self.main_window.show_lobby_window()
