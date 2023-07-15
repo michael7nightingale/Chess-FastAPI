@@ -35,7 +35,20 @@ flake8
 ## Running
 
 ### 1st user (with server)
-Clone this project to the directory `Chess1`, for example. Then run server.
+Clone this project to the directory `Chess1`, for example.
+
+Make migrations.
+```commandline
+cd server
+alembic revision --autogenerate
+```
+Watch the migration id and migrate (ad9al3dss, for example).
+```commandline
+cd server
+alembic uprade ad9al3dss
+```
+
+Then run server.
 ```commandline
 cd server
 uvicorn main:create_app --port 8001
