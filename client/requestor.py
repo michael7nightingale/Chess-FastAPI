@@ -78,6 +78,7 @@ class Requestor:
         try:
             response = requests.get("https://example.com")
             assert response.status_code == 200
+            return response
         except requests.ConnectionError:
             show_exit_dialog(window, "Bad internet connection")
         except Exception as e:

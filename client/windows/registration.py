@@ -46,14 +46,15 @@ class RegistrationWindow(QWidget):
                 "password": password,
                 "email": email
             }
-            self.main_window.requestor.post_unauthorized(
+            response = self.main_window.requestor.post_unauthorized(
                 url=self.config["base_url"] + "auth/register",
                 json=data,
                 status_code=201,
                 window=self,
             )
-            self.close()
-            self.main_window.show_login_window()
+            if response is not None:
+                self.close()
+                self.main_window.show_login_window()
 
     def on_login(self, event):
         self.close()

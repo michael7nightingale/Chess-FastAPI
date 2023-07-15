@@ -47,15 +47,16 @@ class LoginWindow(QWidget):
                 json=data,
                 window=self
             )
-            self.config['token'] = response.json()["access_token"]
+            if response is not None:
+                self.config['token'] = response.json()["access_token"]
 
-            user_data_response = self.main_window.requestor.get_authorized(
-                url=self.config['base_url'] + "auth/me",
-            )
-            self.config['user'] = user_data_response.json()
+                user_data_response = self.main_window.requestor.get_authorized(
+                    url=self.config['base_url'] + "auth/me",
+                )
+                self.config['user'] = user_data_response.json()
 
-            self.close()
-            self.main_window.show_lobby_window()
+                self.close()
+                self.main_window.show_lobby_window()
 
     def on_registration(self, event):
         self.close()
