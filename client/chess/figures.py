@@ -1,7 +1,5 @@
 from .base import Figure, Color
 
-__all__ = ("Pawn", "Tower", "King", "Queen", "Soldier", "Horse", "EmptyFigure", "Figure")
-
 
 class Pawn(Figure):
     _x_step = 0
