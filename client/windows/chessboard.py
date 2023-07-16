@@ -65,7 +65,7 @@ class ChessboardWindow(QWidget):
         self.data: dict = data
         self.game_id = self.data['game_id']
         self.ui = Ui_ChessboardWindow()
-        self.ws = WsMaker(url=f"ws://localhost:8001/ws/chess/{self.game_id}")
+        self.ws = WsMaker(url=f"ws://localhost:8001/chess/ws/{self.game_id}")
         self.thread = WsChessThread(parent=self, ws=self.ws)
 
     def setup(self) -> None:
