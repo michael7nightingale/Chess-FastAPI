@@ -1,1 +1,1 @@
-{"base_url": "http://localhost:8001/"}
+{"server_address": "localhost:8008", "wait_player_url": "/chess/ws/wait-player", "game_url": "/chess/ws/{game_id}", "register_url": "/auth/register", "token_url": "/auth/token", "me_url": "/auth/me"}
