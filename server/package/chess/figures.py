@@ -63,7 +63,7 @@ class King(Figure):
     def move(self, other: Figure):
         if isinstance(other, Tower) and other.color == self.color:
             return self.change_with_tower(other)
-        
+
         if self.color == other.color:
             return False
 
@@ -168,5 +168,3 @@ def match(char: str, *args, **kwargs) -> Figure | None:
         return Horse(data=char, *args, **kwargs)
     else:
         return None
-
-

@@ -1,5 +1,4 @@
 from PyQt6.QtWidgets import QWidget
-from typing import Mapping
 
 from ui.registration import Ui_RegistrationWindow
 from validators import validate_password, validate_username, validate_email
@@ -7,8 +6,7 @@ from qt_tools import alert
 
 
 class RegistrationWindow(QWidget):
-    def __init__(self, parent, config: Mapping):
-        self.config = config
+    def __init__(self, parent):
         self.main_window = parent
         super().__init__(parent=None)
         self.ui = Ui_RegistrationWindow()
@@ -47,7 +45,7 @@ class RegistrationWindow(QWidget):
                 "email": email
             }
             response = self.main_window.requestor.post_unauthorized(
-                url=self.config["base_url"] + "auth/register",
+                url=f"http://{self.main_window.config['server_address']}{self.main_window.config['register_url']}",
                 json=data,
                 status_code=201,
                 window=self,

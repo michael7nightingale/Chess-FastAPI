@@ -55,7 +55,6 @@ class Requestor:
                     url=url,
                     **kwargs
                 )
-                print(response.content, response.status_code)
                 assert response.status_code == status_code
                 return response
             except AssertionError:

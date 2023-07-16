@@ -3,7 +3,6 @@ from starlette.websockets import WebSocketDisconnect
 from fastapi_authtools import login_required
 from datetime import datetime
 from functools import wraps
-import asyncio
 from itertools import chain
 from random import shuffle
 

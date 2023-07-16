@@ -19,10 +19,10 @@ class MainWindow(QMainWindow):
         self.config: Config = Config.load_config()
 
         # setup subwindows
-        self.login_window = LoginWindow(self, self.config)
-        self.registration_window = RegistrationWindow(self, self.config)
-        self.lobby_window = LobbyWindow(self, self.config)
-        self.chessboard_self_window = ChessboardSelfWindow(self, self.config)
+        self.login_window = LoginWindow(self)
+        self.registration_window = RegistrationWindow(self)
+        self.lobby_window = LobbyWindow(self)
+        self.chessboard_self_window = ChessboardSelfWindow(self)
 
         # on-open-application events to check system state
         self.requestor = Requestor(check_token_func=self.check_token, main_window=self)

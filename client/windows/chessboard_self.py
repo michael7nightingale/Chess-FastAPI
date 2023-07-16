@@ -5,9 +5,8 @@ from chess import NUMBERS, LETTERS, CHESSBOARD, Chess
 
 
 class ChessboardSelfWindow(QWidget):
-    def __init__(self, parent, config):
+    def __init__(self, parent):
         self.main_window = parent
-        self.config = config
         super().__init__(parent)
         self.ui = Ui_ChessboardSelfWindow()
 
