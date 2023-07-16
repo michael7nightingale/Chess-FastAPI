@@ -13,7 +13,7 @@ from infrastructure.db.repositories import UserRepository, GameRepository
 
 
 chess_router = APIRouter(
-    prefix="/ws"
+    prefix="/chess"
 )
 player_colors = {"white", "black"}
 
@@ -37,8 +37,8 @@ class WaitConnectionManager:
             shuffle(colors)
             you_color, enemy_color = colors
             # users
-            you = user_repo.filter(username=username)
-            enemy = user_repo.filter(username=enemy_username)
+            you = user_repo.get_by(username=username)
+            enemy = user_repo.get_by(username=enemy_username)
             black_user, white_user = (you, enemy) if you_color == "black" else (enemy, you)
             new_game = game_repo.create(
                 black_user=black_user.id,
@@ -77,7 +77,7 @@ class WaitConnectionManager:
 wait_connection_manager = WaitConnectionManager()
 
 
-@chess_router.websocket("/wait-player")
+@chess_router.websocket("/ws/wait-player")
 async def wait_for_the_plater(
     ws: WebSocket,
 
@@ -190,7 +190,7 @@ def game_context(func):
     return inner
 
 
-@chess_router.websocket('/chess/{game_id}')
+@chess_router.websocket('/ws/{game_id}')
 @game_context
 async def sock_chess(
         ws: WebSocket,
@@ -216,3 +216,9 @@ async def get_my_games(
         chain(black_games, white_games),
         key=lambda game: game.time_start
     )
+
+
+@chess_router.get("/rules")
+async def get_rules():
+    with open("docs/rules.txt") as file:
+        return file.read()
