@@ -5,7 +5,8 @@ from .figures import (
     Tower, EmptyFigure,
     Pawn, King,
     Queen, Soldier,
-    Horse, Figure
+    Horse, Figure,
+    match
 )
 
 
@@ -15,48 +16,17 @@ class Chess:
         self.access_color = next(self.access_queue)
         self.chessboard = [list(row) for row in chessboard]
         self.last_activated: Figure | None = None
-        self.is_finished = False
         self.init_figures()
 
     def changeAccessColor(self) -> None:
         self.access_color = next(self.access_queue)
-
-    def finish_game(self):
-        self.is_finished = True
 
     def init_figures(self) -> None:
         """Translate symbols to objects."""
         for i in range(8):
             for j in range(8):
                 data = self.chessboard[i][j]
-                if data == '':
-                    self.chessboard[i][j] = EmptyFigure(
-                            data=data, row=i, column=j, chessboard=self
-                        )
-                elif data in ('♖', '♜'):
-                    self.chessboard[i][j] = Tower(
-                        data=data, row=i, column=j, chessboard=self
-                    )
-                elif data in ('♙', '♟'):
-                    self.chessboard[i][j] = Pawn(
-                        data=data, row=i, column=j, chessboard=self
-                    )
-                elif data in ('♛', '♕'):
-                    self.chessboard[i][j] = Queen(
-                        data=data, row=i, column=j, chessboard=self
-                    )
-                elif data in ('♚', '♔'):
-                    self.chessboard[i][j] = King(
-                        data=data, row=i, column=j, chessboard=self
-                    )
-                elif data in ('♗', '♝'):
-                    self.chessboard[i][j] = Soldier(
-                        data=data, row=i, column=j, chessboard=self
-                    )
-                elif data in ('♞', '♘'):
-                    self.chessboard[i][j] = Horse(
-                        data=data, row=i, column=j, chessboard=self
-                    )
+                self.chessboard[i][j] = match(char=data, row=i, column=j, chessboard=self)
 
     @property
     def chessboard(self):
@@ -136,12 +106,15 @@ class Chess:
             data='', row=replace_with.row, chessboard=self, column=replace_with.column
         )
         self.chessboard[to_replace.row][to_replace.column] = replace_with
+        replace_with.coords = to_replace.coords
 
     def change(self, to_change, change_with) -> None:
         """Change a figure."""
+        # print("change", to_change.coords, change_with.coords)
         self.chessboard[change_with.row][change_with.column], self.chessboard[to_change.row][to_change.column] = (
             self.chessboard[to_change.row][to_change.column], self.chessboard[change_with.row][change_with.column]
         )
+        to_change.coords = change_with.coords
 
     def inspect_line(
             self,

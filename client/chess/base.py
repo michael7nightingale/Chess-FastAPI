@@ -57,10 +57,6 @@ class Figure(ABC):
         pass
 
     @abstractmethod
-    def cut(self, other: object):
-        pass
-
-    @abstractmethod
     def get_all_moves(self):
         pass
 

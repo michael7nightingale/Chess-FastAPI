@@ -46,8 +46,10 @@ class MainWindow(QMainWindow):
         self.chessboard_self_window = ChessboardSelfWindow(self, self.config)
 
         # on-open-application events to check system state
-        self.requestor = Requestor(check_token_func=self.check_token(), main_window=self)
-        self.requestor.check_connection()
+        print(34)
+        self.requestor = Requestor(check_token_func=self.check_token, main_window=self)
+        print(1)
+        # self.requestor.check_connection()
         self.check_token()
 
     def setup(self):
@@ -78,6 +80,7 @@ class MainWindow(QMainWindow):
 
     def show_registration_window(self) -> None:
         """Show registration window."""
+        self.requestor.check_connection()
         if not self.registration_window.isVisible():
             self.registration_window.show()
 
@@ -85,6 +88,7 @@ class MainWindow(QMainWindow):
         self.lobby_window.setup()
 
     def show_chessboard_window(self, data: dict):
+        self.requestor.check_connection()
         self.chessboard_window = ChessboardWindow(parent=self, config=self.config, data=data)
         self.chessboard_window.startGame()
 
