@@ -21,9 +21,11 @@ async def get_all_users(user_repo: UserRepository = Depends(get_repository(UserR
 
 @auth_router.post("/register", status_code=201)
 async def register_user(user_repo: UserRepository = Depends(get_repository(UserRepository)),
-                        user_schema: UserRegister = Body()) -> UserShow:
+                        user_schema: UserRegister = Body()) -> UserShow | dict :
     """Register user endpoint. All schema data is needed."""
     registered_user: User = user_repo.create(user_schema)
+    if registered_user is None:
+        return {"detail": "Username already exists."}
     return UserShow(**registered_user.as_dict())
 
 

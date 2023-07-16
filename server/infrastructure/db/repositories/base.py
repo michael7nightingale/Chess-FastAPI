@@ -1,6 +1,7 @@
-from typing import TypeVar
 from sqlalchemy.orm import Session
 from sqlalchemy import delete, update, select
+from sqlalchemy.exc import IntegrityError
+from typing import TypeVar
 
 from infrastructure.db.models.base import BaseAlchemyModel
 
@@ -18,11 +19,14 @@ class BaseRepository:
 
     def create(self, **kwargs) -> Model:
         """Create new object in the table"""
-        new_obj = self._model(
-            **kwargs
-        )
-        self.save(new_obj)
-        return new_obj
+        try:
+            new_obj = self._model(
+                **kwargs
+            )
+            self.save(new_obj)
+            return new_obj
+        except IntegrityError:
+            return None
 
     def save(self, obj):
         """Comfortably save object"""
