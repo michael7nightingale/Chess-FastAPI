@@ -1,9 +1,18 @@
 import os
+import socket
+
 from pydantic import BaseSettings
+
+addr = socket.gethostbyname('db')
+print("DEBUG: db address: ", addr)
 
 
 class Settings(BaseSettings):
-    DB_URI: str
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_NAME: str
+    DB_PORT: str
+    DB_HOST: str
 
     SECRET_KEY: str
     EXPIRE_MINUTES: int

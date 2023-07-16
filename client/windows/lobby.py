@@ -2,7 +2,6 @@ from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtWidgets import QWidget
 from websockets.sync.client import connect
 import json
-from typing import Mapping
 
 from ui.lobby import Ui_LobbyWindow
 
@@ -19,7 +18,9 @@ class WsWaitThread(QThread):
         self.main_window = main_window
 
     def run(self):
-        with connect("ws://localhost:8001/chess/ws/wait-player") as ws:
+        with connect(
+                f"ws://{self.main_window.config['server_address']}{self.main_window.config['wait_player_url']}"
+        ) as ws:
             ws.send(self.main_window.config['user']['username'])
             data = ws.recv()
             self.finished.emit(json.loads(data))
@@ -27,9 +28,8 @@ class WsWaitThread(QThread):
 
 class LobbyWindow(QWidget):
 
-    def __init__(self, parent, config: Mapping):
+    def __init__(self, parent):
         self.main_window = parent
-        self.config = config
         super().__init__(parent)
         self.ui = Ui_LobbyWindow()
         self.is_waiting_for_players = False

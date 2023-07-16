@@ -1,3 +1,4 @@
+import socket
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -17,7 +18,10 @@ section = config.config_ini_section
 
 settings = get_app_settings()
 
-config.set_section_option(section, "db_uri", settings.DB_URI)
+addr = socket.gethostbyname(settings.DB_HOST)
+db_uri = f"postgresql://{settings.DB_USER}:{settings.DB_PASSWORD}@{addr}:{settings.DB_PORT}/{settings.DB_NAME}"
+
+config.set_section_option(section, "db_uri", db_uri)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

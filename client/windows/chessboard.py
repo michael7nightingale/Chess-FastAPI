@@ -52,20 +52,21 @@ class WsChessThread(QThread):
                         return self.after_game_signal.emit(move_data_dict['message'])
                     case 401:
                         return self.after_game_signal.emit(move_data_dict['message'])
-            except Exception as e:
-                # raise e
+            except Exception:
                 break
 
 
 class ChessboardWindow(QWidget):
-    def __init__(self, parent, config, data):
+    def __init__(self, parent, data):
         self.main_window = parent
-        self.config = config
         super().__init__(parent)
         self.data: dict = data
         self.game_id = self.data['game_id']
         self.ui = Ui_ChessboardWindow()
-        self.ws = WsMaker(url=f"ws://localhost:8001/chess/ws/{self.game_id}")
+        game_url = self.main_window.config['game_url'].replace("{game_id}", self.game_id)
+        self.ws = WsMaker(
+            url=f"ws://{self.main_window.cofig['server_address']}{game_url}"
+        )
         self.thread = WsChessThread(parent=self, ws=self.ws)
 
     def setup(self) -> None:

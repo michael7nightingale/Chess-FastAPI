@@ -1,5 +1,4 @@
 from PyQt6.QtWidgets import QWidget
-from typing import Mapping
 
 from ui.login import Ui_LoginWindow
 from validators import validate_password, validate_username
@@ -7,9 +6,8 @@ from qt_tools import alert
 
 
 class LoginWindow(QWidget):
-    def __init__(self, parent, config: Mapping):
+    def __init__(self, parent):
         self.main_window = parent
-        self.config = config
         super().__init__(parent=None)
         self.ui = Ui_LoginWindow()
         self.ui.setupUi(self)
@@ -43,17 +41,17 @@ class LoginWindow(QWidget):
                 "password": password
             }
             response = self.main_window.requestor.post_unauthorized(
-                url=self.config['base_url'] + "auth/token",
+                url=f"http://{self.main_window.config['server_address']}{self.main_window.config['token_url']}",
                 json=data,
                 window=self
             )
             if response is not None:
-                self.config['token'] = response.json()["access_token"]
+                self.main_window.config['token'] = response.json()["access_token"]
 
                 user_data_response = self.main_window.requestor.get_authorized(
-                    url=self.config['base_url'] + "auth/me",
+                    url=f"http://{self.main_window.config['server_address']}{self.main_window.config['me_url']}"
                 )
-                self.config['user'] = user_data_response.json()
+                self.main_window.config['user'] = user_data_response.json()
 
                 self.close()
                 self.main_window.show_lobby_window()

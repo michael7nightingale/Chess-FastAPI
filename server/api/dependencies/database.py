@@ -1,3 +1,4 @@
+import socket
 from typing import Type
 
 from fastapi import Depends
@@ -22,7 +23,13 @@ def _get_session(pool=Depends(_get_pool)):
 
 def _get_socket_pool(func):
     settings = get_app_settings()
-    engine = create_engine(settings.DB_URI)
+    addr = socket.gethostbyname(settings.DB_HOST)
+    user = settings.DB_USER
+    password = settings.DB_PASSWORD
+    port = settings.DB_PORT
+    name = settings.DB_NAME
+    db_uri = f"postgresql://{user}:{password}@{addr}:{port}/{name}"
+    engine = create_engine(db_uri)
     pool = sessionmaker(bind=engine)
 
     def inner(pool_=pool, *args, **kwargs):
