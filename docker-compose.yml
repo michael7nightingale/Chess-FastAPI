@@ -1,0 +1,31 @@
+version: "5"
+
+services:
+  fastapi_app:
+    build: .
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "alembic upgrade head &&
+      uvicorn main:create_app --host 0.0.0.0"
+    ports:
+      - "8008:8000"
+    env_file:
+      - ./server/.env
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    expose:
+        - 5432
+    environment:
+        - POSTGRES_USER=admin
+        - POSTGRES_PASSWORD=password
+        - POSTGRES_DB=chess_db
+
+volumes:
+  postgres_data:
+    
