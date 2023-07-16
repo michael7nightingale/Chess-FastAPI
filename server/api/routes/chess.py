@@ -137,7 +137,7 @@ class ChessConnectionManager:
                     "new_color": chessboard.access_color
                 }
                 await self.broadcast(game_id, move_data)
-                chessboard.finish_game()
+                # chessboard.finish_game()
                 # if chessboard.is_finished:
                 #     print(1231, )
                 #     data = {
