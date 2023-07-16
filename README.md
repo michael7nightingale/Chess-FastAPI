@@ -9,6 +9,8 @@ same user instead of two different user, logically).
 - SQLAlchemy;
 - Websockets;
 - PyQt6;
+- Docker;
+- Postgres;
 
 
 ## Requirements
@@ -37,21 +39,9 @@ flake8
 ### 1st user (with server)
 Clone this project to the directory `Chess1`, for example.
 
-Make migrations.
+Run the server (with db) in docker.
 ```commandline
-cd server
-alembic revision --autogenerate
-```
-Watch the migration id and migrate (ad9al3dss, for example).
-```commandline
-cd server
-alembic uprade ad9al3dss
-```
-
-Then run server.
-```commandline
-cd server
-uvicorn main:create_app --port 8001
+docker-compose up --build
 ```
 
 Open other terminal window and run the PyQt application window.
