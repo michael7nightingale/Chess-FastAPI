@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
 
     def show_chessboard_window(self, data: dict) -> None:
         self.requestor.check_connection()
-        self.chessboard_window = ChessboardWindow(parent=self, config=self.config, data=data)
+        self.chessboard_window = ChessboardWindow(parent=self, data=data)
         self.chessboard_window.startGame()
 
     def show_chessboard_self_window(self) -> None:

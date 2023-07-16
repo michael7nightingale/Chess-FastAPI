@@ -50,6 +50,6 @@ class LobbyWindow(QWidget):
             self.is_waiting_for_players = False
 
     def wait_for_players(self) -> None:
-        self.thread = WsWaitThread(self)
+        self.thread = WsWaitThread(self.main_window)
         self.thread.finished.connect(self.main_window.show_chessboard_window)
         self.thread.start()

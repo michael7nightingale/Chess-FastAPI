@@ -65,7 +65,7 @@ class ChessboardWindow(QWidget):
         self.ui = Ui_ChessboardWindow()
         game_url = self.main_window.config['game_url'].replace("{game_id}", self.game_id)
         self.ws = WsMaker(
-            url=f"ws://{self.main_window.cofig['server_address']}{game_url}"
+            url=f"ws://{self.main_window.config['server_address']}{game_url}"
         )
         self.thread = WsChessThread(parent=self, ws=self.ws)
 
