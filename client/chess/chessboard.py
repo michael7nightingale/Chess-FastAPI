@@ -1,26 +1,78 @@
 import itertools
+from copy import deepcopy
 
 from .base import CHESSBOARD, Color, LETTERS
-from .figures import EmptyFigure, match, Figure
+from .figures import EmptyFigure, match, Figure, King
+
+
+class MoveSignal(object):
+    """Move signal object."""
+    pass
 
 
 class Chess:
+    """
+    Chess game class.
+    """
+    # special move signals
+    CheckSignal = MoveSignal()
+    CheckAndMateSignal = MoveSignal()
+    WalkSignal = MoveSignal()
+    CutSignal = MoveSignal()
+
     def __init__(self, chessboard=CHESSBOARD):
-        self.access_queue = itertools.cycle((Color.white, Color.black))
-        self.access_color = next(self.access_queue)
+        self.access_color_queue = itertools.cycle((Color.white, Color.black))
+        self.access_color = next(self.access_color_queue)
+        self.check: bool = False
+        self.check_and_mate: bool = False
+        self.white_king = None
+        self.black_king = None
         self.chessboard = [list(row) for row in chessboard]
         self.last_activated: Figure | None = None
         self.init_figures()
 
-    def changeAccessColor(self) -> None:
-        self.access_color = next(self.access_queue)
+    @property
+    def check_to_color(self):
+        if not self.check:
+            return None
+        return self.access_color
+
+    def is_check(self, king_color: Color, chessboard=None):
+        if chessboard is None:
+            chessboard = deepcopy(self.chessboard)
+        if king_color is Color.white:
+            target_king = self.white_king
+        else:
+            target_king = self.black_king
+
+        for row in chessboard:
+            for fig in row:
+                if not isinstance(fig, EmptyFigure):
+                    to_move = fig.move(target_king, chessboard)
+                    if to_move:
+                        return True
+        return False
+
+    def is_check_and_mate(self):
+        if self.access_color == 'access_color':
+            pass
 
     def init_figures(self) -> None:
         """Translate symbols to objects."""
         for i in range(8):
             for j in range(8):
                 data = self.chessboard[i][j]
-                self.chessboard[i][j] = match(char=data, row=i, column=j, chessboard=self)
+                self.chessboard[i][j] = match(char=data, row=i, column=j, chess=self, chessboard=self.chessboard)
+        # set colored king figures
+        for fig in self:
+            if isinstance(fig, King):
+                if fig.color is Color.white:
+                    self.white_king = fig
+                else:
+                    self.black_king = fig
+
+    def change_access_color(self) -> None:
+        self.access_color = next(self.access_color_queue)
 
     @property
     def chessboard(self):
@@ -60,7 +112,25 @@ class Chess:
             i.active = False
         self.last_activated = None
 
-    def move(self, cell_id: str):
+    def will_be_check(self, to_figure, from_figure, king_color: Color) -> bool:
+        to_figure_copy = deepcopy(to_figure)
+        from_figure_copy = deepcopy(from_figure)
+
+        chessboard = [[f for f in row] for row in self.chessboard]
+        chessboard[from_figure_copy.row][from_figure_copy.column] = EmptyFigure(
+            data='',
+            row=from_figure_copy.row,
+            chess=self,
+            chessboard=chessboard,
+            column=from_figure_copy.column
+        )
+        new_figure_coords = to_figure_copy.coords
+        from_figure_copy.coords = new_figure_coords
+        chessboard[from_figure_copy.row][from_figure_copy.column] = from_figure_copy
+        is_check = self.is_check(king_color, chessboard)
+        return is_check
+
+    def move(self, cell_id: str) -> None | tuple[tuple[str, str], tuple[str, str], MoveSignal]:
         """Move figure function."""
         figure = self.get_figure(cell_id)
         if self.last_activated is None:
@@ -77,41 +147,74 @@ class Chess:
                 if figure == self.last_activated:
                     self.deactivate_all()
                 else:
+
+                    from_id = self.idx_to_id(*self.last_activated.coords)
                     if self.last_activated.color == figure.color:
                         return
                     to_move = self.last_activated.move(figure)
                     if to_move:
-                        from_id = self.idx_to_id(*self.last_activated.coords)
-                        self.last_activated.coords = figure.coords
+                        if self.will_be_check(figure, self.last_activated, self.access_color):
+                            return
+                        if self.check:
+                            if self.will_be_check(figure, self.last_activated, self.access_color):
+                                return
+                            else:
+                                self.check = False
 
+                        if isinstance(figure, EmptyFigure):
+                            self.walk(figure, self.last_activated)
+                            move_signal = self.WalkSignal
+                        else:
+                            self.cut(figure, self.last_activated)
+                            move_signal = self.CutSignal
                         data = (self.last_activated.data, figure.data)
-
                         self.deactivate_all()
-                        self.changeAccessColor()
-
-                        return (from_id, cell_id), data,
+                        self.change_access_color()
+                        # print(*[[c.data for c in row] for row in self.chessboard], sep='\n')
+                        # check is there is `check` or `check and mate`
+                        if self.is_check(self.access_color):
+                            self.check = True
+                            print("CHECK!!!")
+                            move_signal = self.CheckSignal
+                        if self.is_check_and_mate():
+                            self.check_and_mate = True
+                            move_signal = self.CheckAndMateSignal
+                        # send move data
+                        return (from_id, cell_id), data, move_signal
                     else:
                         self.deactivate_all()
                         return
 
-    def replace(self, to_replace, replace_with) -> None:
+    def cut(self, to_cut, from_cut) -> None:
         """Cut a figure."""
-        self.chessboard[replace_with.row][replace_with.column] = EmptyFigure(
-            data='', row=replace_with.row, chessboard=self, column=replace_with.column
+        self.chessboard[from_cut.row][from_cut.column] = EmptyFigure(
+            data="",
+            chess=self,
+            chessboard=self.chessboard,
+            row=from_cut.row,
+            column=from_cut.column
         )
-        self.chessboard[to_replace.row][to_replace.column] = replace_with
-        replace_with.coords = to_replace.coords
+        new_figure_coords = to_cut.coords
+        from_cut.coords = new_figure_coords
+        self.chessboard[from_cut.row][from_cut.column] = from_cut
 
-    def change(self, to_change, change_with) -> None:
+    def walk(self, to_walk: EmptyFigure, from_walk: Figure) -> None:
         """Change a figure."""
-        # print("change", to_change.coords, change_with.coords)
-        self.chessboard[change_with.row][change_with.column], self.chessboard[to_change.row][to_change.column] = (
-            self.chessboard[to_change.row][to_change.column], self.chessboard[change_with.row][change_with.column]
+        new_figure_coords = to_walk.coords
+        self.chessboard[from_walk.row][from_walk.column] = EmptyFigure(
+            data="",
+            chess=self,
+            chessboard=self.chessboard,
+            row=from_walk.row,
+            column=from_walk.column
         )
-        to_change.coords = change_with.coords
+        from_walk.coords = new_figure_coords
+        self.chessboard[to_walk.row][to_walk.column] = from_walk
 
+    @classmethod
     def inspect_line(
-            self,
+            cls,
+            chessboard: list[list[Figure]],
             begin: tuple[int, int],
             to: tuple[int, int]
     ) -> bool:
@@ -132,7 +235,7 @@ class Chess:
         x1 += x_step
         y1 += y_step
         for _ in range(times):
-            if not isinstance(self.chessboard[x1][y1], EmptyFigure):
+            if not isinstance(chessboard[x1][y1], EmptyFigure):
                 is_free = False
                 break
             x1 += x_step
@@ -140,8 +243,10 @@ class Chess:
 
         return is_free
 
+    @classmethod
     def inspect_diagonal(
-            self,
+            cls,
+            chessboard: list[list[Figure]],
             begin: tuple[int, int],
             to: tuple[int, int]
     ) -> bool:
@@ -157,7 +262,7 @@ class Chess:
         x1 += x_step
         y1 += y_step
         for _ in range(times):
-            if not isinstance(self.chessboard[x1][y1], EmptyFigure):
+            if not isinstance(chessboard[x1][y1], EmptyFigure):
                 is_free = False
                 break
             x1 += x_step

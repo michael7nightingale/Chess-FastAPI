@@ -34,9 +34,11 @@ WHITE_FIGURES = ('♛', '♜', '♚',  '♝', '♞', '♟')
 class Figure(ABC):
 
     def __init__(self, data: str,
+                 chess,
                  chessboard,
                  row: int,
                  column: int):
+        self.chess = chess
         self.chessboard = chessboard
         self.color = Color.black if data in BLACK_FIGURES else Color.white
         self.data = data
