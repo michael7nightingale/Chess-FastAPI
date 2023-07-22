@@ -124,7 +124,7 @@ class ChessConnectionManager:
         if chessboard.access_color == data['color']:
             to_move = chessboard.move(data["cell_id"])
             if to_move is not None:
-                (from_id, to_id), (from_data, to_data) = to_move
+                (from_id, to_id), (from_data, to_data), move_signal = to_move
                 move_data = {
                     "status": 200,
                     "to_id": to_id,
@@ -135,6 +135,23 @@ class ChessConnectionManager:
                     "move_color": data["color"],
                     "new_color": chessboard.access_color
                 }
+                if move_signal is chessboard.CheckAndMateSignal:
+                    move_data.update(status=303)
+                    game_repo = get_socket_repository(GameRepository)()
+                    user_repo = get_socket_repository(UserRepository)()
+                    game = game_repo.get(game_id)
+                    if move_data['move_color'] == "black":
+                        winner = game.black_user
+                    else:
+                        winner = game.white_user
+                    winner_user = user_repo.get(winner)
+                    message = f"Game is over. Player {winner.usename} won ({move_data['move_color']})"
+                    move_data.update(
+                        winner=winner_user.username,
+                        message=message
+                    )
+                    game_repo.finish(game_id, winner=winner)
+
                 await self.broadcast(game_id, move_data)
                 # chessboard.finish_game()
                 # if chessboard.is_finished:
@@ -203,7 +220,7 @@ async def sock_chess(
         await chess_connection_manager.move(game_id, data)
 
 
-@chess_router.get("/my-games/")
+@chess_router.get("/my-games")
 @login_required
 async def get_my_games(
         request: Request,

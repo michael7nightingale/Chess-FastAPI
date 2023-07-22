@@ -54,13 +54,7 @@ class Server:
         self.engine.dispose()
 
     def _configurate_db(self) -> None:
-        addr = socket.gethostbyname(self.settings.DB_HOST)
-        user = self.settings.DB_USER
-        password = self.settings.DB_PASSWORD
-        port = self.settings.DB_PORT
-        name = self.settings.DB_NAME
-        db_uri = f"postgresql://{user}:{password}@{addr}:{port}/{name}"
-        self._engine = create_engine_(db_uri)
+        self._engine = create_engine_(self.settings.db_url)
         self._pool = create_sessionmaker(self.engine)
 
         create_superuser(self._pool)
