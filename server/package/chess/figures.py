@@ -5,14 +5,16 @@ class Pawn(Figure):
     _x_step = 0
     _x_differ = 1
 
-    def __init__(self, data, chessboard, row, column):
-        super().__init__(data, chessboard, row, column)
+    def __init__(self, data, chess, chessboard, row, column):
+        super().__init__(data, chess, chessboard, row, column)
         self._coef = -1 if self.color is Color.black else 1
         self._y_differ = 1 * self._coef
         self._initial_y = 1 if self.color is Color.black else 6
         self._y_step = 1 * self._coef
 
-    def move(self, other: Figure):
+    def move(self, other: Figure, chessboard=None):
+        if chessboard is None:
+            chessboard = self.chessboard
         if isinstance(other, EmptyFigure):    # check if fig can be moved to an empty cell
             if self.row == self._initial_y:    # when pawn can move 2 cells
                 is_moved = (
@@ -22,8 +24,6 @@ class Pawn(Figure):
                 )
             else:   # usual 1-cell move
                 is_moved = self - other == (self._y_step, self._x_step)
-            if is_moved:
-                self.chessboard.change(other, self)
             return is_moved
         else:
             if other.color is self.color:  # can't cut one-colored
@@ -31,8 +31,6 @@ class Pawn(Figure):
             else:
                 cutted = self - other
                 is_cutted = (abs(cutted[1]) == self._x_differ) and (cutted[0] == self._y_differ)
-                if is_cutted:
-                    self.chessboard.replace(other, self)
                 return is_cutted
 
     def get_all_moves(self):
@@ -40,11 +38,11 @@ class Pawn(Figure):
 
 
 class EmptyFigure(Figure):
-    def __init__(self, data, chessboard, row, column):
-        super().__init__(data, chessboard, row, column)
+    def __init__(self, data, chess, chessboard, row, column):
+        super().__init__(data, chess, chessboard, row, column)
         self.color = None
 
-    def move(self, other: Figure):
+    def move(self, other: Figure, chessboard=None):
         return False
 
     def get_all_moves(self):
@@ -57,12 +55,14 @@ class King(Figure):
     _x_differ = 1
     _y_differ = 1
 
-    def change_with_tower(self, tower: Figure):
+    def castling(self, tower: Figure):
         pass
 
-    def move(self, other: Figure):
+    def move(self, other: Figure, chessboard=None):
+        if chessboard is None:
+            chessboard = self.chessboard
         if isinstance(other, Tower) and other.color == self.color:
-            return self.change_with_tower(other)
+            return self.castling(other)
 
         if self.color == other.color:
             return False
@@ -77,19 +77,19 @@ class King(Figure):
 
 class Soldier(Figure):
 
-    def move(self, other: Figure) -> bool:
+    def move(self, other: Figure, chessboard=None) -> bool:
+        if chessboard is None:
+            chessboard = self.chessboard
         if self.color is other.color:
             return False
         else:
             cutted = self - other
             is_moved = abs(cutted[0]) == abs(cutted[1])
             if is_moved:
-                if not self.chessboard.inspect_diagonal(self.coords, other.coords):
-                    return False
-                else:
-                    self.chessboard.replace(other, self)
-
-            return is_moved
+                # print(*[[c.data if c.data else " " for c in row] for row in self.chessboard], sep='\n')
+                if self.chess.inspect_diagonal(chessboard, self.coords, other.coords):
+                    return True
+        return False
 
     def get_all_moves(self):
         pass
@@ -98,14 +98,12 @@ class Soldier(Figure):
 class Horse(Figure):
     __differs = (1, 2)
 
-    def move(self, other: Figure) -> bool:
+    def move(self, other: Figure, chessboard=None) -> bool:
         if self.color is other.color:
             return False
         else:
             cutted = self - other
             is_moved = sorted([abs(i) for i in cutted]) == list(self.__differs)
-            if is_moved:
-                self.chessboard.replace(other, self)
             return is_moved
 
     def get_all_moves(self):
@@ -114,36 +112,36 @@ class Horse(Figure):
 
 class Tower(Figure):
 
-    def move(self, other: Figure):
+    def move(self, other: Figure, chessboard=None):
+        if chessboard is None:
+            chessboard = self.chessboard
         to_move = False
         if self.color is other:
             return False
         else:
             if not all(self - other):
-                to_move = self.chessboard.inspect_line(self.coords, other.coords)
+                to_move = self.chess.inspect_line(chessboard, self.coords, other.coords)
+                return to_move
             else:
                 return False
-            if to_move:
-                self.chessboard.replace(other, self)
-            return to_move
 
     def get_all_moves(self):
         pass
 
 
 class Queen(Figure):
-    def move(self, other: Figure) -> bool:
+    def move(self, other: Figure, chessboard=None) -> bool:
+        if chessboard is None:
+            chessboard = self.chessboard
         if self.color is other.color:
             return False
         else:
             cutted = self - other
             to_moved = False
             if not all(cutted):
-                to_moved = self.chessboard.inspect_line(self.coords, other.coords)
+                to_moved = self.chess.inspect_line(chessboard, self.coords, other.coords)
             elif abs(cutted[0]) == abs(cutted[1]):
-                to_moved = self.chessboard.inspect_diagonal(self.coords, other.coords)
-            if to_moved:
-                self.chessboard.replace(other, self)
+                to_moved = self.chess.inspect_diagonal(chessboard, self.coords, other.coords)
             return to_moved
 
     def get_all_moves(self):
