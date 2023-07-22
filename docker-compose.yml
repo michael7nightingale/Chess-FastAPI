@@ -10,6 +10,8 @@ services:
       uvicorn main:create_app --host 0.0.0.0"
     ports:
       - "8008:8000"
+    environment:
+      - DOCKER=1
     env_file:
       - ./server/.env
     depends_on:
