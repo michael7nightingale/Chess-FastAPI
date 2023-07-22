@@ -15,12 +15,20 @@ class WsMaker:
     """
     def __init__(self, url: str):
         self.url = url
+        self.sentinel = False
         self.ws_gen = iter(self)
+
+    def close(self):
+        self.sentinel = True
+        next(self.ws_gen)   # to break iter cycle and close the connection
 
     def __iter__(self):
         with connect(self.url) as ws:
             while True:
+                if self.sentinel:
+                    break
                 yield ws
+            return
 
     def __call__(self, *args, **kwargs) -> ClientConnection:
         ws = next(self.ws_gen)
@@ -49,6 +57,7 @@ class WsChessThread(QThread):
                         move = Move(**move_data_dict)
                         self.move_signal.emit(move)
                     case 303:
+                        self.ws.close()
                         return self.after_game_signal.emit(move_data_dict['message'])
                     case 401:
                         return self.after_game_signal.emit(move_data_dict['message'])

@@ -86,10 +86,7 @@ class Soldier(Figure):
             cutted = self - other
             is_moved = abs(cutted[0]) == abs(cutted[1])
             if is_moved:
-                # print(*[[c.data if c.data else " " for c in row] for row in self.chessboard], sep='\n')
-                if self.chess.inspect_diagonal(chessboard, self.coords, other.coords):
-                    return True
-        return False
+                return self.chess.inspect_diagonal(chessboard, self.coords, other.coords)
 
     def get_all_moves(self):
         pass

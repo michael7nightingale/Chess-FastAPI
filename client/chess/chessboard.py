@@ -47,7 +47,7 @@ class Chess:
 
         for row in chessboard:
             for fig in row:
-                if not isinstance(fig, EmptyFigure):
+                if not isinstance(fig, EmptyFigure) and fig.color is not king_color:
                     to_move = fig.move(target_king, chessboard)
                     if to_move:
                         return True
@@ -77,6 +77,13 @@ class Chess:
     @property
     def chessboard(self):
         return self._chessboard
+
+    @property
+    def not_access_color(self):
+        if self.access_color is Color.white:
+            return Color.black
+        else:
+            return Color.white
 
     @chessboard.setter
     def chessboard(self, new_value):
@@ -124,6 +131,7 @@ class Chess:
             chessboard=chessboard,
             column=from_figure_copy.column
         )
+
         new_figure_coords = to_figure_copy.coords
         from_figure_copy.coords = new_figure_coords
         chessboard[from_figure_copy.row][from_figure_copy.column] = from_figure_copy
@@ -155,11 +163,6 @@ class Chess:
                     if to_move:
                         if self.will_be_check(figure, self.last_activated, self.access_color):
                             return
-                        if self.check:
-                            if self.will_be_check(figure, self.last_activated, self.access_color):
-                                return
-                            else:
-                                self.check = False
 
                         if isinstance(figure, EmptyFigure):
                             self.walk(figure, self.last_activated)
@@ -170,7 +173,6 @@ class Chess:
                         data = (self.last_activated.data, figure.data)
                         self.deactivate_all()
                         self.change_access_color()
-                        # print(*[[c.data for c in row] for row in self.chessboard], sep='\n')
                         # check is there is `check` or `check and mate`
                         if self.is_check(self.access_color):
                             self.check = True
@@ -234,6 +236,7 @@ class Chess:
         is_free = True
         x1 += x_step
         y1 += y_step
+        # print(*[[c.data if c.data else " " for c in row] for row in chessboard], sep='\n')
         for _ in range(times):
             if not isinstance(chessboard[x1][y1], EmptyFigure):
                 is_free = False
@@ -261,6 +264,7 @@ class Chess:
         is_free = True
         x1 += x_step
         y1 += y_step
+        print(*[[c for c in row] for row in chessboard], sep='\n')
         for _ in range(times):
             if not isinstance(chessboard[x1][y1], EmptyFigure):
                 is_free = False
