@@ -17,10 +17,18 @@ class BaseRepository:
         self._model = model
         self._session = session
 
-    def create(self, **kwargs) -> Model:
+    @property
+    def model(self):
+        return self._model
+
+    @property
+    def session(self) -> Session:
+        return self._session
+
+    def create(self, **kwargs) -> Model | None:
         """Create new object in the table"""
         try:
-            new_obj = self._model(
+            new_obj = self.model(
                 **kwargs
             )
             self.save(new_obj)
@@ -35,49 +43,49 @@ class BaseRepository:
 
     def get(self, id_: int) -> Model:
         """Get object by pk (id)"""
-        query = select(self._model).where(self._model.id == id_)
-        return self._session.execute(query).scalar_one_or_none()
+        query = select(self.model).where(self.model.id == id_)
+        return self.session.execute(query).scalar_one_or_none()
 
     def get_by(self, **kwargs) -> Model:
         """Filter all objects by kwargs"""
-        query = select(self._model).filter_by(**kwargs)
-        return self._session.execute(query).scalar_one_or_none()
+        query = select(self.model).filter_by(**kwargs)
+        return self.session.execute(query).scalar_one_or_none()
 
     def filter(self, **kwargs) -> list[Model]:
         """Filter all objects by kwargs"""
-        query = select(self._model).filter_by(**kwargs)
-        return self._session.execute(query).scalars().all()
+        query = select(self.model).filter_by(**kwargs)
+        return self.session.execute(query).scalars().all()
 
     def all(self) -> list[Model]:
         """Get all objects from the table"""
-        query = select(self._model)
-        return self._session.execute(query).scalars().all()
+        query = select(self.model)
+        return self.session.execute(query).scalars().all()
 
     def update(self, id_, **kwargs):
         """Update object by pk (id) with values kwargs"""
-        query = update(self._model).where(self._model.id == id_).values(**kwargs)
-        self._session.execute(query)
+        query = update(self.model).where(self.model.id == id_).values(**kwargs)
+        self.session.execute(query)
         self.commit()
 
     def delete(self, id_) -> None:
         """Delete object by pk (id)"""
-        query = delete(self._model).where(self._model.id == id_)
-        self._session.execute(query)
+        query = delete(self.model).where(self.model.id == id_)
+        self.session.execute(query)
         self.commit()
 
     def clear(self) -> None:
         """Delete all objects from the table."""
-        query = delete(self._model)
-        self._session.execute(query)
+        query = delete(self.model)
+        self.session.execute(query)
         self.commit()
 
     def commit(self):
         """Comfortably commit changes"""
-        self._session.commit()
+        self.session.commit()
 
     def add(self, obj):
         """Comfortably add object"""
-        self._session.add(obj)
+        self.session.add(obj)
 
 
 class SlugGetMixin:
