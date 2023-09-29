@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, Engine
-from sqlalchemy.orm import sessionmaker, declarative_base, Session, DeclarativeBase
+from sqlalchemy.orm import sessionmaker, declarative_base
 
 
 def create_sessionmaker(engine: Engine) -> sessionmaker:
@@ -16,12 +16,7 @@ def create_engine_(dns: str) -> Engine:
     return engine
 
 
-def create_declarative_base() -> DeclarativeBase:
-    Base = declarative_base()
-    return Base
-
-
-Base = create_declarative_base()
+Base = declarative_base()
 
 
 class TableMixin:

@@ -2,8 +2,8 @@ from fastapi import FastAPI, APIRouter
 from fastapi_authtools import AuthManager
 
 from db import create_engine_, create_sessionmaker
-from db.utils import create_superuser
-from api.routes import __routes__
+from db.events import create_superuser, custom_user_getter
+from api.routes import __routers__
 from config import get_app_settings
 
 
@@ -15,7 +15,7 @@ class Server:
         self._app: FastAPI = app
         self._configurate_db()
         self._configurate_auth()
-        self._configurate_routes(*__routes__)
+        self._configurate_routes(*__routers__)
 
     @property
     def app(self) -> FastAPI:
@@ -42,7 +42,8 @@ class Server:
             app=self.app,
             secret_key=self.settings.SECRET_KEY,
             expire_minutes=self.settings.EXPIRE_MINUTES,
-            algorithm=self.settings.ALGORITHM
+            algorithm=self.settings.ALGORITHM,
+            user_getter=custom_user_getter
         )
 
     def _on_startup(self):
