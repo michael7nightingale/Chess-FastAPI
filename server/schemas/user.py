@@ -11,6 +11,7 @@ class UserShow(BaseModel):
     """Schema for response"""
     id: str
     username: str
+    email: str
     first_name: str | None = None
     last_name: str | None = None
     is_superuser: bool
