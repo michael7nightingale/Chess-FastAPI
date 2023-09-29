@@ -1,4 +1,4 @@
-from .auth import auth_router
-from .chess import chess_router
+from . import chess, auth
 
-__routes__ = (chess_router, auth_router)
+
+__routers__ = (chess.router, auth.router)

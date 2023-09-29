@@ -6,12 +6,12 @@ from functools import wraps
 from itertools import chain
 from random import shuffle
 
+from api.dependencies.database import get_game_repository, get_socket_repository
 from package.chess.chessboard import Chess
-from api.dependencies import get_socket_repository, get_repository
 from db.repositories import UserRepository, GameRepository
 
 
-chess_router = APIRouter(prefix="/chess")
+router = APIRouter(prefix="/chess")
 player_colors = {"white", "black"}
 
 
@@ -74,7 +74,7 @@ class WaitConnectionManager:
 wait_connection_manager = WaitConnectionManager()
 
 
-@chess_router.websocket("/ws/wait-player")
+@router.websocket("/ws/wait-player")
 async def wait_for_the_plater(
     ws: WebSocket,
 
@@ -151,16 +151,6 @@ class ChessConnectionManager:
                     game_repo.finish(game_id, winner=winner)
 
                 await self.broadcast(game_id, move_data)
-                # chessboard.finish_game()
-                # if chessboard.is_finished:
-                #     print(1231, )
-                #     data = {
-                #         "status": 302,
-                #         "winner": data["you"]
-                #     }
-                #     await self.broadcast(game_id, data)
-                #     print(1232345456)
-                #     await self.finish_game(game_id, data)
 
     async def finish_game(self, game_id: str, data) -> None:
         for user in self.connections[game_id]['users']:
@@ -204,7 +194,7 @@ def game_context(func):
     return inner
 
 
-@chess_router.websocket('/ws/{game_id}')
+@router.websocket('/ws/{game_id}')
 @game_context
 async def sock_chess(
         ws: WebSocket,
@@ -218,11 +208,11 @@ async def sock_chess(
         await chess_connection_manager.move(game_id, data)
 
 
-@chess_router.get("/my-games")
+@router.get("/my-games")
 @login_required
 async def get_my_games(
         request: Request,
-        game_repo: GameRepository = Depends(get_repository(GameRepository))
+        game_repo: GameRepository = Depends(get_game_repository)
 ):
     white_games = game_repo.filter(black_user=request.user.id)
     black_games = game_repo.filter(white_user=request.user.id)
@@ -232,7 +222,7 @@ async def get_my_games(
     )
 
 
-@chess_router.get("/rules")
+@router.get("/rules")
 async def get_rules():
     with open("docs/rules.txt") as file:
         return file.read()
