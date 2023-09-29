@@ -1,12 +1,12 @@
-import socket
-from typing import Type
-
 from fastapi import Depends
 from config import get_app_settings
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from starlette.requests import Request
 
+from typing import Type
+
+from db.repositories import UserRepository, GameRepository
 from db.repositories.base import BaseRepository
 
 
@@ -51,3 +51,7 @@ def get_repository(repo_type: Type[BaseRepository]):
     def _get_repo(session=Depends(_get_session)) -> BaseRepository:
         return repo_type(session)
     return _get_repo
+
+
+get_user_repository = get_repository(UserRepository)
+get_game_repository = get_repository(GameRepository)
