@@ -9,7 +9,7 @@ services:
       sh -c "alembic upgrade head &&
       uvicorn main:create_app --host 0.0.0.0"
     ports:
-      - "8008:8000"
+      - "8008:8008"
     environment:
       - DOCKER=1
     env_file:
