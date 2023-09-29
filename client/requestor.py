@@ -5,7 +5,7 @@ from functools import wraps
 
 class Requestor:
     """
-    Mixin for sending requests to the server from the main window to save logic here.
+    Class for sending requests to the server from the main window to save logic here.
     """
     def __init__(self, check_token_func, main_window):
         self.main_window = main_window
@@ -16,7 +16,7 @@ class Requestor:
         @wraps(func)
         def inner(self, url: str, window=None, status_code: int = 200, **kwargs):
             if window is None:
-                window = self
+                window = self.main_window
             self.main_window.check_token()
             try:
                 headers = {"Authorization": f"Bearer {self.main_window.config['token']}"}

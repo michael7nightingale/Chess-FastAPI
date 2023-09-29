@@ -50,7 +50,7 @@ class RegistrationWindow(QWidget):
                 status_code=201,
                 window=self,
             )
-            if response is not None:
+            if response:
                 self.close()
                 self.main_window.show_login_window()
 

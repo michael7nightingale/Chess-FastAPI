@@ -26,6 +26,7 @@ class MainWindow(QMainWindow):
 
         # on-open-application events to check system state
         self.requestor = Requestor(check_token_func=self.check_token, main_window=self)
+        self.requestor.check_connection()
         self.check_token()
 
     def setup(self):

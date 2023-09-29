@@ -45,16 +45,18 @@ class LoginWindow(QWidget):
                 json=data,
                 window=self
             )
-            if response is not None:
-                self.main_window.config['token'] = response.json()["access_token"]
-
+            if response:
+                access_token = response.json()["access_token"]
+                self.main_window.config['token'] = access_token
                 user_data_response = self.main_window.requestor.get_authorized(
-                    url=f"http://{self.main_window.config['server_address']}{self.main_window.config['me_url']}"
+                    url=f"http://{self.main_window.config['server_address']}{self.main_window.config['me_url']}",
                 )
-                self.main_window.config['user'] = user_data_response.json()
-
-                self.close()
-                self.main_window.show_lobby_window()
+                if user_data_response:
+                    self.main_window.config['user'] = user_data_response.json()
+                    self.close()
+                    self.main_window.show_lobby_window()
+                else:
+                    del self.main_window.config['token']
 
     def on_registration(self, event):
         self.close()
