@@ -41,9 +41,15 @@ class BaseRepository:
         self.add(obj)
         self.commit()
 
-    def get(self, id_: int) -> Model:
+    def get(self, *args, **kwargs) -> Model:
         """Get object by pk (id)"""
-        query = select(self.model).where(self.model.id == id_)
+        if len(args) != 0:
+            if len(args) == 1:
+                kwargs.update(id=args[0])
+            else:
+                raise ValueError("1 argument id expected")
+        expected = (getattr(self.model, k) == v for k, v in kwargs.items())
+        query = select(self.model).where(*expected).limit(1)
         return self.session.execute(query).scalar_one_or_none()
 
     def get_by(self, **kwargs) -> Model:
