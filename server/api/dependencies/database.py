@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 from starlette.requests import Request
 
-from infrastructure.db.repositories.base import BaseRepository
+from db.repositories.base import BaseRepository
 
 
 def _get_pool(request: Request):

@@ -1,7 +1,7 @@
 from fastapi import Depends, Body, Request
 from starlette.exceptions import HTTPException
 
-from infrastructure.db.repositories import UserRepository
+from db.repositories import UserRepository
 from api.dependencies.database import get_repository
 from api.responses import AuthDetail
 from schemas.user import UserLogin

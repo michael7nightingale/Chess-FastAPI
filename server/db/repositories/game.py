@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import update
 
 from .base import BaseRepository
-from infrastructure.db.models import Game
+from db.models import Game
 
 
 class GameRepository(BaseRepository):

@@ -3,7 +3,7 @@ from sqlalchemy import delete, update, select
 from sqlalchemy.exc import IntegrityError
 from typing import TypeVar
 
-from infrastructure.db.models.base import BaseAlchemyModel
+from db.models.base import BaseAlchemyModel
 
 
 Model = TypeVar("Model", bound=BaseAlchemyModel)

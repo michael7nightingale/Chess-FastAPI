@@ -1,10 +1,8 @@
-import socket
-
 from fastapi import FastAPI, APIRouter
 from fastapi_authtools import AuthManager
 
-from infrastructure.db import create_engine_, create_sessionmaker
-from infrastructure.db.utils import create_superuser
+from db import create_engine_, create_sessionmaker
+from db.utils import create_superuser
 from api.routes import __routes__
 from config import get_app_settings
 

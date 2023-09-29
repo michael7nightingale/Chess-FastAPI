@@ -8,12 +8,10 @@ from random import shuffle
 
 from package.chess.chessboard import Chess
 from api.dependencies import get_socket_repository, get_repository
-from infrastructure.db.repositories import UserRepository, GameRepository
+from db.repositories import UserRepository, GameRepository
 
 
-chess_router = APIRouter(
-    prefix="/chess"
-)
+chess_router = APIRouter(prefix="/chess")
 player_colors = {"white", "black"}
 
 

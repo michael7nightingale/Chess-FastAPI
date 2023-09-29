@@ -1,7 +1,7 @@
 from sqlalchemy import String, Column, ForeignKey, DateTime, func
 from uuid import uuid4
 
-from infrastructure.db import Base, TableMixin
+from db import Base, TableMixin
 
 
 class Game(Base, TableMixin):

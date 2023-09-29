@@ -3,8 +3,8 @@ from fastapi_authtools.exceptions import raise_credentials_error
 
 from api.dependencies.auth import get_superuser
 from api.dependencies.database import get_repository
-from infrastructure.db.repositories import UserRepository
-from infrastructure.db.models import User
+from db.repositories import UserRepository
+from db.models import User
 from schemas.user import UserShow, UserRegister, UserLogin
 
 
@@ -21,7 +21,7 @@ async def get_all_users(user_repo: UserRepository = Depends(get_repository(UserR
 
 @auth_router.post("/register", status_code=201)
 async def register_user(user_repo: UserRepository = Depends(get_repository(UserRepository)),
-                        user_schema: UserRegister = Body()) -> UserShow | dict :
+                        user_schema: UserRegister = Body()) -> UserShow | dict:
     """Register user endpoint. All schema data is needed."""
     registered_user: User = user_repo.create(user_schema)
     if registered_user is None:

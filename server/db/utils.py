@@ -1,4 +1,4 @@
-from infrastructure.db.models.user import User
+from db.models.user import User
 from package.hasher import hash_password
 from sqlalchemy.exc import IntegrityError
 

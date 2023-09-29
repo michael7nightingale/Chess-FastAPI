@@ -1,7 +1,7 @@
 from sqlalchemy import Column, DateTime, String, Boolean, func
 from uuid import uuid4
 
-from infrastructure.db import Base, TableMixin
+from db import Base, TableMixin
 
 
 class User(Base, TableMixin):
