@@ -1,4 +1,4 @@
-fastapi==0.99.1
+fastapi==0.103.2
 fastapi-authtools==0.6.2
 bcrypt==4.0.1
 pytest==7.3.1
