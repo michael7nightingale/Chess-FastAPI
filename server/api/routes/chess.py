@@ -7,7 +7,7 @@ from itertools import chain
 from random import shuffle
 
 from api.dependencies.database import get_game_repository, get_socket_repository
-from package.chess.chessboard import Chess
+from package.chess.chessboard import Chess, MoveEnum
 from db.repositories import UserRepository, GameRepository
 
 
@@ -118,7 +118,7 @@ class ChessConnectionManager:
 
     async def move(self, game_id: str, data: dict) -> None:
         """Make a move for the game chessboard."""
-        chessboard = self.connections[game_id]["chessboard"]
+        chessboard: Chess = self.connections[game_id]["chessboard"]
         if chessboard.access_color == data['color']:
             to_move = chessboard.move(data["cell_id"])
             if to_move is not None:
@@ -133,7 +133,7 @@ class ChessConnectionManager:
                     "move_color": data["color"],
                     "new_color": chessboard.access_color
                 }
-                if move_signal is chessboard.CheckAndMateSignal:
+                if move_signal is MoveEnum.CHECK_AND_MATE:
                     move_data.update(status=303)
                     game_repo = get_socket_repository(GameRepository)()
                     user_repo = get_socket_repository(UserRepository)()

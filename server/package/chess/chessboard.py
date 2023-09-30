@@ -1,24 +1,23 @@
 import itertools
 from copy import deepcopy
+from enum import Enum, auto
 
 from .base import CHESSBOARD, Color, LETTERS
 from .figures import EmptyFigure, match, Figure, King
 
 
-class MoveSignal(object):
-    """Move signal object."""
-    pass
+class MoveEnum(Enum):
+    """Move signals enum."""
+    CHECK = auto()
+    CHECK_AND_MATE = auto()
+    WALK = auto()
+    CUT = auto()
 
 
 class Chess:
     """
     Chess game class.
     """
-    # special move signals
-    CheckSignal = MoveSignal()
-    CheckAndMateSignal = MoveSignal()
-    WalkSignal = MoveSignal()
-    CutSignal = MoveSignal()
 
     def __init__(self, chessboard=CHESSBOARD):
         self.access_color_queue = itertools.cycle((Color.white, Color.black))
@@ -120,7 +119,7 @@ class Chess:
         to_figure_copy = deepcopy(to_figure)
         from_figure_copy = deepcopy(from_figure)
 
-        chessboard = [[f for f in row] for row in self.chessboard]
+        chessboard: list[list[Figure]] = [[f for f in row] for row in self.chessboard]
         chessboard[from_figure_copy.row][from_figure_copy.column] = EmptyFigure(
             data='',
             row=from_figure_copy.row,
@@ -137,7 +136,7 @@ class Chess:
         is_check = self.is_check(target_king, chessboard)
         return is_check
 
-    def move(self, cell_id: str) -> None | tuple[tuple[str, str], tuple[str, str], MoveSignal]:
+    def move(self, cell_id: str) -> None | tuple[tuple[str, str], tuple[str, str], MoveEnum]:
         """Move figure function."""
         figure = self.get_figure(cell_id)
         if self.last_activated is None:
@@ -166,10 +165,10 @@ class Chess:
 
                         if isinstance(figure, EmptyFigure):
                             self.walk(figure, self.last_activated)
-                            move_signal = self.WalkSignal
+                            move_signal = MoveEnum.WALK
                         else:
                             self.cut(figure, self.last_activated)
-                            move_signal = self.CutSignal
+                            move_signal = MoveEnum.CUT
                         data = (self.last_activated.data, figure.data)
                         self.deactivate_all()
                         self.change_access_color()
@@ -177,10 +176,10 @@ class Chess:
                         if self.is_check(self.target_king):
                             self.check = True
                             print("CHECK!!!")
-                            move_signal = self.CheckSignal
+                            move_signal = MoveEnum.CHECK
                         if self.is_check_and_mate():
                             self.check_and_mate = True
-                            move_signal = self.CheckAndMateSignal
+                            move_signal = MoveEnum.CHECK_AND_MATE
                         # send move data
                         return (from_id, cell_id), data, move_signal
                     else:

@@ -12,7 +12,7 @@ class Pawn(Figure):
         self._initial_y = 1 if self.color is Color.black else 6
         self._y_step = 1 * self._coef
 
-    def move(self, other: Figure, chessboard=None):
+    def move(self, other: Figure, chessboard=None) -> bool:
         if chessboard is None:
             chessboard = self.chessboard
         if isinstance(other, EmptyFigure):    # check if fig can be moved to an empty cell
@@ -42,7 +42,7 @@ class EmptyFigure(Figure):
         super().__init__(data, chess, chessboard, row, column)
         self.color = None
 
-    def move(self, other: Figure, chessboard=None):
+    def move(self, other: Figure, chessboard=None) -> bool:
         return False
 
     def get_all_moves(self):
@@ -58,10 +58,10 @@ class King(Figure):
     def castling(self, tower: Figure):
         pass
 
-    def move(self, other: Figure, chessboard=None):
+    def move(self, other: Figure, chessboard=None) -> bool:
         if chessboard is None:
             chessboard = self.chessboard
-        if isinstance(other, Tower) and other.color == self.color:
+        if isinstance(other, Rook) and other.color == self.color:
             return self.castling(other)
 
         if self.color == other.color:
@@ -75,7 +75,7 @@ class King(Figure):
         pass
 
 
-class Soldier(Figure):
+class Bishop(Figure):
 
     def move(self, other: Figure, chessboard=None) -> bool:
         if chessboard is None:
@@ -92,7 +92,7 @@ class Soldier(Figure):
         pass
 
 
-class Horse(Figure):
+class Knight(Figure):
     __differs = (1, 2)
 
     def move(self, other: Figure, chessboard=None) -> bool:
@@ -107,9 +107,9 @@ class Horse(Figure):
         pass
 
 
-class Tower(Figure):
+class Rook(Figure):
 
-    def move(self, other: Figure, chessboard=None):
+    def move(self, other: Figure, chessboard=None) -> bool:
         if chessboard is None:
             chessboard = self.chessboard
         to_move = False
@@ -150,7 +150,7 @@ def match(char: str, *args, **kwargs) -> Figure | None:
     if char == '':
         return EmptyFigure(data=char, *args, **kwargs)
     elif char in ('♖', '♜'):
-        return Tower(data=char, *args, **kwargs)
+        return Rook(data=char, *args, **kwargs)
     elif char in ('♙', '♟'):
         return Pawn(data=char, *args, **kwargs)
     elif char in ('♛', '♕'):
@@ -158,8 +158,8 @@ def match(char: str, *args, **kwargs) -> Figure | None:
     elif char in ('♚', '♔'):
         return King(data=char, *args, **kwargs)
     elif char in ('♗', '♝'):
-        return Soldier(data=char, *args, **kwargs)
+        return Bishop(data=char, *args, **kwargs)
     elif char in ('♞', '♘'):
-        return Horse(data=char, *args, **kwargs)
+        return Knight(data=char, *args, **kwargs)
     else:
         return None

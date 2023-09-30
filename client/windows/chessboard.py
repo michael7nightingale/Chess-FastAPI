@@ -28,7 +28,7 @@ class WsMaker:
                 if self.sentinel:
                     break
                 yield ws
-            return
+            ws.close()
 
     def __call__(self, *args, **kwargs) -> ClientConnection:
         ws = next(self.ws_gen)
