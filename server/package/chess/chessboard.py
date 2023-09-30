@@ -37,17 +37,14 @@ class Chess:
             return None
         return self.access_color
 
-    def is_check(self, king_color: Color, chessboard=None):
+    def is_check(self, target_king: King, chessboard=None):
+        # print(f"Check check for {target_king.color} king")
         if chessboard is None:
             chessboard = deepcopy(self.chessboard)
-        if king_color is Color.white:
-            target_king = self.white_king
-        else:
-            target_king = self.black_king
 
         for row in chessboard:
             for fig in row:
-                if not isinstance(fig, EmptyFigure):
+                if not isinstance(fig, EmptyFigure) and fig.color is not target_king.color:
                     to_move = fig.move(target_king, chessboard)
                     if to_move:
                         return True
@@ -77,6 +74,13 @@ class Chess:
     @property
     def chessboard(self):
         return self._chessboard
+
+    @property
+    def not_access_color(self):
+        if self.access_color is Color.white:
+            return Color.black
+        else:
+            return Color.white
 
     @chessboard.setter
     def chessboard(self, new_value):
@@ -112,7 +116,7 @@ class Chess:
             i.active = False
         self.last_activated = None
 
-    def will_be_check(self, to_figure, from_figure, king_color: Color) -> bool:
+    def will_be_check(self, to_figure, from_figure, target_king: King) -> bool:
         to_figure_copy = deepcopy(to_figure)
         from_figure_copy = deepcopy(from_figure)
 
@@ -124,10 +128,13 @@ class Chess:
             chessboard=chessboard,
             column=from_figure_copy.column
         )
+
         new_figure_coords = to_figure_copy.coords
         from_figure_copy.coords = new_figure_coords
+        if isinstance(from_figure_copy, King):
+            target_king = from_figure_copy
         chessboard[from_figure_copy.row][from_figure_copy.column] = from_figure_copy
-        is_check = self.is_check(king_color, chessboard)
+        is_check = self.is_check(target_king, chessboard)
         return is_check
 
     def move(self, cell_id: str) -> None | tuple[tuple[str, str], tuple[str, str], MoveSignal]:
@@ -153,13 +160,9 @@ class Chess:
                         return
                     to_move = self.last_activated.move(figure)
                     if to_move:
-                        if self.will_be_check(figure, self.last_activated, self.access_color):
+                        if self.will_be_check(figure, self.last_activated, self.target_king):
+                            print("WILL BE CHECK")
                             return
-                        if self.check:
-                            if self.will_be_check(figure, self.last_activated, self.access_color):
-                                return
-                            else:
-                                self.check = False
 
                         if isinstance(figure, EmptyFigure):
                             self.walk(figure, self.last_activated)
@@ -170,9 +173,8 @@ class Chess:
                         data = (self.last_activated.data, figure.data)
                         self.deactivate_all()
                         self.change_access_color()
-                        # print(*[[c.data for c in row] for row in self.chessboard], sep='\n')
                         # check is there is `check` or `check and mate`
-                        if self.is_check(self.access_color):
+                        if self.is_check(self.target_king):
                             self.check = True
                             print("CHECK!!!")
                             move_signal = self.CheckSignal
@@ -184,6 +186,10 @@ class Chess:
                     else:
                         self.deactivate_all()
                         return
+
+    @property
+    def target_king(self) -> King:
+        return self.black_king if self.access_color is Color.black else self.white_king
 
     def cut(self, to_cut, from_cut) -> None:
         """Cut a figure."""
