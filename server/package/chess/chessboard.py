@@ -136,7 +136,7 @@ class Chess:
         is_check = self.is_check(target_king, chessboard)
         return is_check
 
-    def move(self, cell_id: str) -> None | tuple[tuple[str, str], tuple[str, str], MoveEnum]:
+    def move(self, cell_id: str) -> None | tuple[tuple[str, str], tuple[str, str], MoveEnum]:   # noqa: C901
         """Move figure function."""
         figure = self.get_figure(cell_id)
         if self.last_activated is None:
