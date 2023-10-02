@@ -1,6 +1,7 @@
 import itertools
 from copy import deepcopy
 from enum import Enum, auto
+from typing import Iterable
 
 from .base import CHESSBOARD, Color, LETTERS
 from .figures import EmptyFigure, match, Figure, King
@@ -20,27 +21,28 @@ class Chess:
     """
 
     def __init__(self, chessboard=CHESSBOARD):
-        self.access_color_queue = itertools.cycle((Color.white, Color.black))
-        self.access_color = next(self.access_color_queue)
+        self.access_color_queue: Iterable = itertools.cycle((Color.white, Color.black))
+        self.access_color: Color = next(self.access_color_queue)
         self.check: bool = False
         self.check_and_mate: bool = False
-        self.white_king = None
-        self.black_king = None
-        self.chessboard = [list(row) for row in chessboard]
+        self.white_king: King | None = None
+        self.black_king: King | None = None
+        self.chessboard: list[list[Figure]] = [list(row) for row in chessboard]
         self.last_activated: Figure | None = None
         self.init_figures()
 
     @property
-    def check_to_color(self):
+    def checked_color(self) -> Color:
         if not self.check:
             return None
         return self.access_color
 
-    def is_check(self, target_king: King, chessboard=None):
+    def is_check(self, target_king: King | None = None, chessboard=None) -> bool:
         # print(f"Check check for {target_king.color} king")
         if chessboard is None:
             chessboard = deepcopy(self.chessboard)
-
+        if target_king is None:
+            target_king = self.target_king
         for row in chessboard:
             for fig in row:
                 if not isinstance(fig, EmptyFigure) and fig.color is not target_king.color:
@@ -49,9 +51,13 @@ class Chess:
                         return True
         return False
 
-    def is_check_and_mate(self):
-        if self.access_color == 'access_color':
-            pass
+    def is_check_and_mate(self, target_king: King | None = None, chessboard=None) -> bool:
+        for from_fig in filter(lambda x: x.color is self.access_color, iter(self)):
+            for to_fig in filter(lambda x: x.color is not self.access_color or isinstance(x, EmptyFigure), iter(self)):
+                if from_fig.move(to_fig):
+                    if not self.will_be_check(to_fig, from_fig):
+                        return False
+        return True
 
     def init_figures(self) -> None:
         """Translate symbols to objects."""
@@ -71,24 +77,23 @@ class Chess:
         self.access_color = next(self.access_color_queue)
 
     @property
-    def chessboard(self):
+    def chessboard(self) -> list[list[Figure]]:
         return self._chessboard
 
     @property
-    def not_access_color(self):
-        if self.access_color is Color.white:
-            return Color.black
-        else:
-            return Color.white
+    def not_access_color(self) -> Color:
+        not_access_color = next(self.access_color_queue)
+        self.change_access_color()
+        return not_access_color
 
     @chessboard.setter
-    def chessboard(self, new_value):
+    def chessboard(self, new_value) -> None:
         if not hasattr(self, '__chessboard'):
             self._chessboard = new_value
         else:
             raise TypeError("Chessboard cant`t be changed.")
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[Figure]:
         return itertools.chain(*self.chessboard)
 
     def get_figure(self, id_: str) -> Figure:
@@ -115,10 +120,9 @@ class Chess:
             i.active = False
         self.last_activated = None
 
-    def will_be_check(self, to_figure, from_figure, target_king: King) -> bool:
+    def will_be_check(self, to_figure: Figure, from_figure: Figure, target_king: King | None = None) -> bool:
         to_figure_copy = deepcopy(to_figure)
         from_figure_copy = deepcopy(from_figure)
-
         chessboard: list[list[Figure]] = [[f for f in row] for row in self.chessboard]
         chessboard[from_figure_copy.row][from_figure_copy.column] = EmptyFigure(
             data='',
@@ -159,8 +163,8 @@ class Chess:
                         return
                     to_move = self.last_activated.move(figure)
                     if to_move:
-                        if self.will_be_check(figure, self.last_activated, self.target_king):
-                            print("WILL BE CHECK")
+                        if self.will_be_check(figure, self.last_activated):
+                            # print("WILL BE CHECK")
                             return
 
                         if isinstance(figure, EmptyFigure):
@@ -173,13 +177,15 @@ class Chess:
                         self.deactivate_all()
                         self.change_access_color()
                         # check is there is `check` or `check and mate`
-                        if self.is_check(self.target_king):
+                        if self.is_check():
                             self.check = True
-                            print("CHECK!!!")
+                            # print("CHECK!!!")
                             move_signal = MoveEnum.CHECK
-                        if self.is_check_and_mate():
-                            self.check_and_mate = True
-                            move_signal = MoveEnum.CHECK_AND_MATE
+                        if self.check:
+                            if self.is_check_and_mate():
+                                print("a-s0d9a0-s9diuajopisdja")
+                                self.check_and_mate = True
+                                move_signal = MoveEnum.CHECK_AND_MATE
                         # send move data
                         return (from_id, cell_id), data, move_signal
                     else:
