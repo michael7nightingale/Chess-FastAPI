@@ -55,7 +55,7 @@ class Figure(ABC):
         self.row, self.column = new_coords
 
     @abstractmethod
-    def move(self, other: object) -> bool:
+    def move(self, other: object, chessboard: object) -> bool:
         pass
 
     @abstractmethod
