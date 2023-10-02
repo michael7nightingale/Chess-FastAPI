@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, String, Boolean, func
+from sqlalchemy import Column, DateTime, String, Boolean, func, Integer
 from uuid import uuid4
 
 from db import Base, TableMixin
@@ -15,5 +15,7 @@ class User(Base, TableMixin):
     password = Column(String(200))
     last_login = Column(DateTime(timezone=True), server_default=func.now())
     date_join = Column(DateTime(timezone=True), server_default=func.now())
-    is_superuser = Column(Boolean, default=False)
-    is_staff = Column(Boolean, default=False)
+    is_superuser = Column(Boolean(), default=False)
+    is_staff = Column(Boolean(), default=False)
+
+    score = Column(Integer(), default=0)

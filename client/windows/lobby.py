@@ -32,6 +32,7 @@ class LobbyWindow(QWidget):
         self.main_window = parent
         super().__init__(parent)
         self.ui = Ui_LobbyWindow()
+        self.thread: WsWaitThread | None = None
         self.is_waiting_for_players = False
 
     def setup(self):
@@ -40,6 +41,8 @@ class LobbyWindow(QWidget):
         self.ui.join_game_button.clicked.connect(self.on_join_game)
 
     def on_start_self_game(self, event):
+        if self.thread is not None:
+            self.thread.disconnect()
         return self.main_window.show_chessboard_self_window()
 
     def on_join_game(self, event):
