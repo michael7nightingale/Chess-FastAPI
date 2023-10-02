@@ -23,6 +23,7 @@ class MainWindow(QMainWindow):
         self.registration_window = RegistrationWindow(self)
         self.lobby_window = LobbyWindow(self)
         self.chessboard_self_window = ChessboardSelfWindow(self)
+        self.is_authorized_user = False
 
         # on-open-application events to check system state
         self.requestor = Requestor(check_token_func=self.check_token, main_window=self)
@@ -37,6 +38,7 @@ class MainWindow(QMainWindow):
         if "token" not in self.config:
             self.show_login_window()
         else:
+            self.is_authorized_user = True
             self.show_lobby_window()
             self.show()
 
